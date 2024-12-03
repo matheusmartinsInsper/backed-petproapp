@@ -15,9 +15,13 @@ namespace app.WebUI.Controllers
     public class FormController : ControllerBase
     {
         private IRepositoryForm _repoform;
-        public FormController(IRepositoryForm repoform)
+        private IRepositoryUserClinic _repoclinic;
+        private IRepositoryAttendance _repoattendance;
+        public FormController(IRepositoryForm repoform, IRepositoryAttendance repoattendance, IRepositoryUserClinic repoclinic)
         {
             _repoform = repoform;
+            _repoclinic = repoclinic;
+            _repoattendance = repoattendance;
         }
         [HttpPost]
         [Authorize]
@@ -49,6 +53,46 @@ namespace app.WebUI.Controllers
                 string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
                 List<FormDbDTO> forms =  await usecase.execute(iduser);
                 var data = new { status = "confirmed",data =  forms};
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    messageError = ex.Message
+                });
+            }
+        }
+        [HttpPost("Save/Anamnese")]
+        [Authorize]
+        public async Task<ActionResult> CreateInstanceForm([FromBody] InputSaveAnamnese input)
+        {
+            try
+            {
+                string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
+                SaveAnamnese usecase = new SaveAnamnese(_repoattendance,_repoform,_repoclinic);
+                await usecase.execute(iduser,input.values);
+                var data = new { status = "confirmed" };
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    messageError = ex.Message
+                });
+            }
+        }
+        [HttpGet("Get/Anamnese")]
+        [Authorize]
+        public async Task<ActionResult> GetInstanceForm([FromQuery(Name ="idattendance")] string idattendance, [FromQuery(Name = "idform")] string idform)
+        {
+            try
+            {
+                string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
+                GetAnamneseByAttendance usecase = new GetAnamneseByAttendance(_repoform);
+                FormDbDTO form = await usecase.execute(iduser, idattendance,idform);
+                var data = new { status = "confirmed",data = form };
                 return Ok(data);
             }
             catch (Exception ex)

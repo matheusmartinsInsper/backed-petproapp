@@ -2,11 +2,10 @@
 using app.Application.IRepository;
 using app.Domain.Agregate.Entities;
 using app.Domain.DomainService;
-using System.ComponentModel;
 
 namespace app.Application.UseCase
 {
-    public class GetProntuarioByUser
+    public class GetProntuario
     {
         private IRepositoryOrderService _repository;
         private IRepositoryService _reposervice;
@@ -15,7 +14,8 @@ namespace app.Application.UseCase
         private IRepositoryUserClinic _repoclinic;
         private IRepositoryPet _repopet;
         private IRepositoryProntuario _repoprontuario;
-        public GetProntuarioByUser(IRepositoryProntuario repoprontuario, IRepositoryPet repopet, IRepositoryUserClinic repoclinic, IRepositoryOrderService repository, IRepositoryService reposervice, IRepositoryUserTutor repouser, IRepositoryPortfolioClient repoport)
+        private IRepositoryAttendance _repoattendance;
+        public GetProntuario(IRepositoryAttendance repoattendance, IRepositoryProntuario repoprontuario, IRepositoryPet repopet, IRepositoryUserClinic repoclinic, IRepositoryOrderService repository, IRepositoryService reposervice, IRepositoryUserTutor repouser, IRepositoryPortfolioClient repoport)
         {
             _repository = repository;
             _reposervice = reposervice;
@@ -24,13 +24,11 @@ namespace app.Application.UseCase
             _repoclinic = repoclinic;
             _repopet = repopet;
             _repoprontuario = repoprontuario;
+            _repoattendance = repoattendance;
         }
-        public async Task<List<OutputProntuarioDTO>> execute(string idowner)
+        public async Task<OutputProntuarioDTO> execute(string idowner, string idprontuario)
         {
-            List<OutputProntuarioDTO> output = new List<OutputProntuarioDTO>();
-            List<Prontuario> prontuarios = await _repoprontuario.getByIdOwner(idowner);
-            foreach(Prontuario prontuario in prontuarios)
-            {
+            Prontuario prontuario = await _repoprontuario.get(idprontuario);
                 OutputProntuarioDTO dto = new OutputProntuarioDTO()
                 {
                     pet = new PetOS(),
@@ -39,7 +37,7 @@ namespace app.Application.UseCase
                 List<OutputOsFromProntuario> orders = new List<OutputOsFromProntuario>();
                 Pet pet = await _repopet.get(prontuario.idpet);
                 User tutor = await _repouser.get(prontuario.idtutor);
-                foreach(string idsos in prontuario.idsorderservices)
+                foreach (string idsos in prontuario.idsorderservices)
                 {
                     OrderService order = await _repository.get(idsos);
                     Service service = await _reposervice.get(order.idService);
@@ -66,6 +64,11 @@ namespace app.Application.UseCase
                     osofprontuario.price = sum.sum();
                     orders.Add(osofprontuario);
                 }
+                foreach (string idattendance in prontuario.idsattendance)
+                {
+                    Attendance att = await _repoattendance.get(idattendance);
+                    OrderService order = await _repository.get(att.idos);
+                }
                 dto.idprontuario = prontuario.idprontuario;
                 dto.idsattendance = prontuario.idsattendance;
                 dto.datecreate = prontuario.createDate;
@@ -80,9 +83,7 @@ namespace app.Application.UseCase
                 dto.pet.sex = pet.Sex;
                 dto.tutor.email = tutor.email;
                 dto.tutor.name = tutor.name;
-                output.Add(dto);
-            }
-            return output;
+                return dto;
         }
     }
 }

@@ -1,15 +1,18 @@
+using app.Application.GatewayService.WppAPI;
 using app.Application.IAuth;
 using app.Application.IRepository;
 using app.Infra.Auth;
+using app.Infra.GatewayServices.WppAPI;
 using app.Infra.Repository;
 using app.Infra.Repository.FactoryContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Stripe;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddCors(options =>
@@ -38,7 +41,12 @@ builder.Services.AddScoped<IRepositoryProntuario, RepositoryProntuario>();
 builder.Services.AddScoped<IRepositoryFile, RepositoryFile>();
 builder.Services.AddScoped<IRepositoryForm, RepositoryForm>();
 builder.Services.AddScoped<IRepositoryPortfolioClient, RepositoryPortfolioClient>();
-builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ITokenService, TokenServiceSignin>();
+builder.Services.AddScoped<IMessage,Message>();
+builder.Services.AddScoped<AccountLinkService>(); // Para links de conta conectada
+builder.Services.AddScoped<PaymentIntentService>(); // Para criar Payment Intents
+builder.Services.AddScoped<ChargeService>(); // Para processar cobranças diretas
+
 
 
 

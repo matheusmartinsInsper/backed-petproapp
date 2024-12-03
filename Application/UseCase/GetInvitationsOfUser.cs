@@ -18,7 +18,7 @@ namespace app.Application.UseCase
         public async Task<List<InvitationOutput>> execute(string iduser)
         {
             List<InvitationOutput> invitesoutput = new List<InvitationOutput>();
-            User collaborator = await _repocollaborator.get(iduser);
+            User collaborator = await _repoclinic.getUserBase(iduser);
             List<InviteCollaborator> invitations = await _repoinvite.getAll(collaborator.email);
             if (invitations == null)
                 return null;

@@ -5,9 +5,12 @@ namespace app.Application.DTO
     public class AttendanceOutPut
     {
         public string idattendance {  get; set; }
+        public string idos { get; set; }
         public string status { get; set; }
         public string hipotese { get; set; }
         public string conclusao { get; set; }
+        public bool haveanamnese { get; set; }
+        public string idform {  get; set; }
         public Serviceoutput service {  get; set; }
         public PetOS pet { get; set; }
         public Tutor tutor { get; set; }

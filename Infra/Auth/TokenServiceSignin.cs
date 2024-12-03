@@ -7,7 +7,7 @@ using System.Text;
 
 namespace app.Infra.Auth
 {
-    public class TokenService:ITokenService
+    public class TokenServiceSignin : ITokenService
     {
         // private string keysecret = Environment.GetEnvironmentVariable("KEYSECRETTOKEN");
         private string keysecret = "ksksjffdfd74645834745hfhdhdfhdf8899889";

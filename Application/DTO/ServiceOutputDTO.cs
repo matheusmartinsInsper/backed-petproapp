@@ -9,6 +9,7 @@ namespace app.Application.DTO
         public string Titulo { get; set; }
         public string Descrição { get; set; }
         public string IdDoServiço { get; set; }
+        public string Status {  get; set; }
         public float? Preço { get; set; }
         public List<VaccineDbDTO> Vacinas { get; set; }
         public List<ServiceSubCategoryDb> Subcategorias { get; set; }

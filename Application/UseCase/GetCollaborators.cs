@@ -29,6 +29,7 @@ namespace app.Application.UseCase
                 collab.CPF = collaborator.cpf;
                 collab.DataDeNascimento = collaborator.dateborn;
                 collab.Status = "Ativo";
+                collab.Phone = collaborator.Fone != null ? $"+{collaborator.Fone.countrycode}{collaborator.Fone.areacode}{collaborator.Fone.phone}" : null;
                 collaboratorDTOs.Add(collab);
             }
             return collaboratorDTOs;

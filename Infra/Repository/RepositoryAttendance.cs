@@ -23,7 +23,7 @@ namespace app.Infra.Repository
             {
                 await _context.connect(_connectString);
                 List<Attendance> atts = new List<Attendance>();
-                string command = "SELECT idattendance,idorderservice,iduserattendance,idusertutor,iduserrecipient,idpet,hipotese,conclusao,payment,status FROM attendance WHERE " +
+                string command = "SELECT idattendance,idorderservice,iduserattendance,idusertutor,iduserrecipient,idpet,hipotese,conclusao,payment,status,haveanamnese,idform FROM attendance WHERE " +
                     "idattendance = @idattendance";
              
                 Dictionary<string, object> parameters = new Dictionary<string, object>()
@@ -48,8 +48,8 @@ namespace app.Infra.Repository
             using (_context as IDisposable)
             {
                 await _context.connect(_connectString);
-                string command = "INSERT INTO \"attendance\" (idattendance,idorderservice,iduserattendance,idusertutor,iduserrecipient,idpet,hipotese,conclusao,payment,status) VALUES " +
-               "(@idattendance,@idorderservice,@iduserattendance,@idusertutor,@idrecipient,@idpet,@hipotese,@conclusao,@payment,@status)";
+                string command = "INSERT INTO \"attendance\" (idattendance,idorderservice,iduserattendance,idusertutor,iduserrecipient,idpet,hipotese,conclusao,payment,status,haveanamnese,idform) VALUES " +
+               "(@idattendance,@idorderservice,@iduserattendance,@idusertutor,@idrecipient,@idpet,@hipotese,@conclusao,@payment,@status,@haveanamnese,@idform)";
                 Dictionary<string, object> parameters = new Dictionary<string, object>()
              {
                 {"@idattendance",attendance.idattendance},
@@ -62,6 +62,8 @@ namespace app.Infra.Repository
                 {"@conclusao",attendance.conclusao},
                 {"@payment",attendance.waspaid},
                 {"@status",attendance.status},
+                {"@haveanamnese",attendance.haveanamnese},
+                {"@idform",attendance.idform},
              };
                 await _context.command(command, parameters);
                 _context.close();
@@ -73,7 +75,7 @@ namespace app.Infra.Repository
             using (_context as IDisposable)
             {
                 await _context.connect(_connectString);
-                string command = "UPDATE attendance SET hipotese=@hipotese,conclusao=@conclusao,payment=@payment,status=@status where idattendance=@idattendance";
+                string command = "UPDATE attendance SET hipotese=@hipotese,conclusao=@conclusao,payment=@payment,status=@status,haveanamnese=@haveanamnese,idform=@idform where idattendance=@idattendance";
         ;
                 Dictionary<string, object> parameters = new Dictionary<string, object>()
              {
@@ -82,6 +84,8 @@ namespace app.Infra.Repository
                 {"@conclusao",attendance.conclusao},
                 {"@payment",attendance.waspaid},
                 {"@status",attendance.status},
+                {"@haveanamnese",attendance.haveanamnese},
+                {"@idform",attendance.idform},
              };
                 await _context.command(command, parameters);
                 _context.close();

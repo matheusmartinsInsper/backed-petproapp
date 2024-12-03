@@ -20,7 +20,41 @@ namespace app.Infra.Repository
         }
         public async Task<Prontuario> get(string idprontuario)
         {
-            throw new NotImplementedException();
+            await _context.connect(_connectString);
+            List<Prontuario> prontuarioofpet = new List<Prontuario>();
+            string commandBase = "SELECT idprontuario,idowner,idpet,idtutor,datecreate FROM \"prontuario\" WHERE idprontuario = @idprontuario";
+            string commandgetidos = "SELECT idos,idprontuario FROM \"idosprontuario\" WHERE idprontuario = @idprontuario";
+            string commandgetidatt = "SELECT idattendance,idprontuario FROM \"idattendanceprontuario\" WHERE idprontuario = @idprontuario";
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
+            {
+                {"@idprontuario",idprontuario}
+            };
+            Dictionary<string, object> parameteridprontuario = new Dictionary<string, object>();
+            List<JsonObject> result = await _context.read(commandBase, parameters);
+
+            List<ProntuarioDbDTO> prontuarios = result.Select(jsonObject => JsonSerializer.Deserialize<ProntuarioDbDTO>(jsonObject.ToJsonString()))
+                                          .ToList();
+            if (prontuarios.Count == 0)
+            {
+                _context.close();
+                return null;
+            }
+            foreach (ProntuarioDbDTO prontuario in prontuarios)
+            {
+                parameteridprontuario["@idprontuario"] = prontuario.idprontuario;
+                List<JsonObject> os = await _context.read(commandgetidos, parameteridprontuario);
+                List<IdOsDb> idos = os.Select(jsonObject => JsonSerializer.Deserialize<IdOsDb>(jsonObject.ToJsonString()))
+                                              .ToList().FindAll(x => x.idprontuario == prontuario.idprontuario);
+
+                List<JsonObject> attendance = await _context.read(commandgetidatt, parameteridprontuario);
+                List<IdAttendanceDB> idattendance = attendance.Select(jsonObject => JsonSerializer.Deserialize<IdAttendanceDB>(jsonObject.ToJsonString()))
+                                              .ToList().FindAll(x => x.idprontuario == prontuario.idprontuario);
+
+                Prontuario prontuariorestore = Prontuario.restore(prontuario, idos, idattendance);
+                prontuarioofpet.Add(prontuariorestore);
+            }
+            _context.close();
+            return prontuarioofpet[0];
         }
 
         public async Task<List<Prontuario>> getByIdOwner(string idowner)

@@ -11,6 +11,8 @@ namespace app.Domain.Agregate.Entities
         private Price Price;
         private object _nameCategory;
         private string _codeCategory;
+        private string _status;
+        private bool _wasdeleted;
         private List<VaccineDbDTO> _vaccines;
         private List<string> _attendancemodelspermission = new List<string> { "Online","Presencial","Domiciliar" };
         private List<string> _attendancemodels;
@@ -26,6 +28,7 @@ namespace app.Domain.Agregate.Entities
         public object nameCategory { get { return _nameCategory; } }
         public string codeCategory { get { return _codeCategory; } }
         public List<string> attendancemodels { get { return _attendancemodels; } }
+        public string status { get { return _status; } }
         private Service() { }
         public static Service create(ServiceDTO servicedto)
         {
@@ -37,16 +40,27 @@ namespace app.Domain.Agregate.Entities
             List<VaccineDbDTO> vacciensofservice = service.buildVaccines(servicedto.vaccines, service.Price, vaccines, idservice);
             List<ServiceSubCategoryDb> subcategorysofservice = service.buildServiceSubcategory(servicedto.subcategories, service.Price); 
             service._codeCategory = servicedto.codecategory;
+            service._status = "Rascunho";
             service.subcategories = service.vallidsubcategory(servicedto,subcategorysofservice);
             service._nameCategory = service.categoryService.GetCategory(service._codeCategory);
             service.titleService = servicedto.title;
             service.idService = idservice;
             service.idUser = servicedto.idUser;
             service.description = servicedto.description;
+            service._wasdeleted = false;
             service.price = service.validPriceOfService(servicedto);
             service._vaccines = service.vallidvaccine(servicedto, vacciensofservice);
             service._attendancemodels = service.setAttendanceModel(servicedto.typeofatendimento);
             return service;
+        }
+        public void post()
+        {
+            if (_status == "Rascunho")
+            {
+                _status = "Postado";
+                return;
+            }
+            throw new Exception("Serviço ja postado");
         }
 
         private List<ServiceSubCategoryDb> vallidsubcategory(ServiceDTO service, List<ServiceSubCategoryDb> subcategorysofservice)
@@ -175,6 +189,7 @@ namespace app.Domain.Agregate.Entities
             service._nameCategory = servicedto.namecategory;
             service._vaccines = vaccines;
             service.subcategories = subcategories;
+            service._status = servicedto.status;
             service._attendancemodels = service.converteToAttendance(attendences);
             return service;
         }

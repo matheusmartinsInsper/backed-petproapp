@@ -1,5 +1,6 @@
 ﻿using app.Application.IRepository;
 using app.Domain.Agregate.Entities;
+using app.Domain.DTO.Fone;
 using app.Domain.DTO.User;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -20,6 +21,7 @@ namespace app.Infra.Repository
         {
             await _context.connect(_connectString);
             string commandBase = "SELECT name,email,password,iduser,category,dateborn from \"user\" where iduser = @iduser";
+            string commandGetNumber = "SELECT idfone,iduser,countrycode,areacode,phone,createat FROM fone where iduser = @iduser";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@iduser",id }
@@ -37,8 +39,12 @@ namespace app.Infra.Repository
             }
             List<UserTutorDb> dtos = result.Select(jsonObject => JsonSerializer.Deserialize<UserTutorDb>(jsonObject.ToJsonString()))
                                            .ToList();
+            List<JsonObject> fones = await _context.read(commandGetNumber, parameters);
+            List<PhoneDTO> fonesdto = fones.Select(jsonObject => JsonSerializer.Deserialize<PhoneDTO>(jsonObject.ToJsonString()))
+                                         .ToList();
             _context.close();
-            User user = User.restore(dtos[0]);
+            PhoneDTO fone = fonesdto.Count() == 0 ? null : fonesdto[0];
+            User user = User.restore(dtos[0],fone);
             return user;
         }
 
@@ -62,6 +68,7 @@ namespace app.Infra.Repository
         {
             await _context.connect(_connectString);
             string commandBase = "SELECT name,email,password,iduser,category,dateborn from \"user\" where email = @email";
+            string commandGetNumber = "SELECT idfone,iduser,countrycode,areacode,phone,createat FROM fone where iduser = @iduser";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@email",email }
@@ -81,13 +88,34 @@ namespace app.Infra.Repository
                                            .ToList();
             if (dtos.Count == 0)
                 throw new Exception("user not found");
-            User user = User.restore(dtos[0]);
+            string iduser = dtos[0].iduser;
+            parameters["@iduser"] = iduser;
+            List<JsonObject> fones = await _context.read(commandGetNumber, parameters);
+            List<PhoneDTO> fonesdto = fones.Select(jsonObject => JsonSerializer.Deserialize<PhoneDTO>(jsonObject.ToJsonString()))
+                                         .ToList();
+            PhoneDTO fone = fonesdto.Count() == 0 ? null : fonesdto[0];
+            User user = User.restore(dtos[0],fone);
             _context.close();
             return user;
         }
-        public Task update(User user)
+        public async Task update(User user)
         {
-            throw new NotImplementedException();
+            await _context.connect(_connectString);
+            string commandinsertPhone = "insert into fone (iduser,idfone,phone,countrycode,areacode,createat) values (@iduser,@idfone,@phone,@countrycode,@areacode,@createat)";
+            string commanddelete = "delete from fone where iduser = @iduser";
+            Dictionary<string, object> paramns = new Dictionary<string, object>()
+            {
+                { "@iduser" ,user.id},
+                { "@idfone" ,user.Fone.idfone},
+                { "@phone" ,user.Fone.phone},
+                { "@countrycode" ,user.Fone.countrycode},
+                { "@areacode" ,user.Fone.areacode},
+                { "@createat" ,user.Fone.createat}
+            };
+            await _context.command(commanddelete, paramns);
+            await _context.command(commandinsertPhone, paramns);
+            _context.close();
+            return;
         }
 
         public async Task delete(User user)

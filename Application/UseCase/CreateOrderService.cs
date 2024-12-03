@@ -30,6 +30,8 @@ namespace app.Application.UseCase
         public async Task<OrderService> execute(OrderServiceInputController order,string idtutor)
         {
             Service service = await _reposervice.get(order.idservice);
+            if (service.status == "Rascunho")
+                throw new Exception("Serviço ainda não postado");
             User owner = await _repoclinic.getUserBase(service.idUser);
             User user = await _repouser.get(idtutor);
             List<Pet> pets = await _repopet.getByUser(user.id);

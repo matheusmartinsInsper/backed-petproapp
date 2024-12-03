@@ -9,6 +9,7 @@ using app.WebUI.DTO;
 using Microsoft.AspNetCore.Authorization;
 using app.Application.DTO;
 using app.Application.IAuth;
+using app.Application.GatewayService.WppAPI;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -28,7 +29,8 @@ namespace app.WebUI.Controllers
         private ITokenService _tokenservice;
         private IRepositoryPortfolioClient _repoport;
         private IRepositoryProntuario _repoprontuario;
-        public OrderServiceController(IRepositoryProntuario repoprontuario, IRepositoryPortfolioClient repoport, ITokenService tokenservice, IRepositoryPet repopet, IRepositoryOrderService repoos, IRepositoryService reposervice,IRepositoryUserTutor repotutor,IRepositoryNetWork reponet,IRepositoryUserClinic repoclinic, IRepositoryUserCollaborator repocollaborator)
+        private IMessage _message;
+        public OrderServiceController(IMessage message, IRepositoryProntuario repoprontuario, IRepositoryPortfolioClient repoport, ITokenService tokenservice, IRepositoryPet repopet, IRepositoryOrderService repoos, IRepositoryService reposervice,IRepositoryUserTutor repotutor,IRepositoryNetWork reponet,IRepositoryUserClinic repoclinic, IRepositoryUserCollaborator repocollaborator)
         {
             _repoos = repoos;   
             _reposervice = reposervice;
@@ -40,6 +42,7 @@ namespace app.WebUI.Controllers
             _tokenservice = tokenservice;
             _repoport = repoport;
             _repoprontuario = repoprontuario;
+            _message = message;
         }
         [HttpPost]
         [Authorize]
@@ -187,7 +190,7 @@ namespace app.WebUI.Controllers
         {
             try
             {
-                AcceptOrderService usecase = new AcceptOrderService(_repoos, _reponet,_repocollaborator,_repoclinic);
+                AcceptOrderService usecase = new AcceptOrderService(_message, _repotutor, _reposervice, _repoos, _reponet,_repocollaborator,_repoclinic);
                 string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
                 await usecase.execute(iduser, idos, emailuserattendance);
                 var data = new { status = "confirmed" };

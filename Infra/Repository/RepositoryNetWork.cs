@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json;
 using app.Domain.DTO.NetWorkCollaborator;
 using app.Domain.DTO.User;
+using app.Domain.DTO.Fone;
 
 namespace app.Infra.Repository
 {
@@ -65,12 +66,13 @@ namespace app.Infra.Repository
         {
             await _context.connect(_connectString);
             string commandBase = "select name,email from \"user\" t inner join network on t.iduser = network.idcollaborator where network.iduserprimary=@iduserprimary";
+            string commandGetNumber = "SELECT idfone,iduser,countrycode,areacode,phone,createat FROM fone where iduser = @iduser";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                {"@iduserprimary",idUserPrimary}
             };
             List<JsonObject> resultbase = await _context.read(commandBase, parameters);
-
+            
             List<UserBaseDTO> users = resultbase.Select(jsonObject => JsonSerializer.Deserialize<UserBaseDTO>(jsonObject.ToJsonString()))
                                            .ToList();
             _context.close();

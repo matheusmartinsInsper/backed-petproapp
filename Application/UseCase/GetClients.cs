@@ -28,6 +28,7 @@ namespace app.Application.UseCase
                 dto.dateadd = client.dateadd;
                 dto.name = tutor.name;
                 dto.email = tutor.email;
+                dto.phone = tutor.Fone!=null?$"+{tutor.Fone.countrycode}{tutor.Fone.areacode}{tutor.Fone.phone}":null;
                 dto.dateborn = tutor.dateborn;
                 List<Pet> pets = await _repopet.getByUser(client.idclient);
                 List<PetOutput> petsoutput = new List<PetOutput>();

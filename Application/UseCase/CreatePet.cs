@@ -15,21 +15,28 @@ namespace app.Application.UseCase
         }
         public async Task execute(PetDTO petdto,string idusertutor)
         {
-            PetDTOInputUseCase dto = new PetDTOInputUseCase()
+            User user = await _repotutor.get(idusertutor);
+            if (user.id != null)
             {
-                idusertutor = idusertutor,
-                petname = petdto.petname,
-                castrated = petdto.castrated,
-                dateborn = petdto.dateborn,
-                sex = petdto.sex,
-                weight = petdto.weight,
-                race = petdto.race,
-                species = petdto.species,
-            };
-            Pet pet = Pet.create(dto);
-            User user = await _repotutor.get(dto.idusertutor);
-            if(user.id!=null)
-            {
+                PetDTOInputUseCase dto = new PetDTOInputUseCase()
+                {
+                    idusertutor = idusertutor,
+                    petname = petdto.petname,
+                    castrated = petdto.castrated,
+                    dateborn = petdto.dateborn,
+                    sex = petdto.sex,
+                    weight = petdto.weight,
+                    race = petdto.race,
+                    species = petdto.species,
+                    ContraindicationDTO = petdto.ContraindicationDTO
+                };
+                if (dto.ContraindicationDTO != null)
+                {
+                    Pet petwithcontraindication = Pet.create(dto,dto.ContraindicationDTO);
+                    await _repopet.save(petwithcontraindication);
+                    return;
+                }
+                Pet pet = Pet.create(dto);
                 await _repopet.save(pet);
                 return;
             }

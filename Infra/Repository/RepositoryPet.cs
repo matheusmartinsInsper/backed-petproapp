@@ -35,6 +35,7 @@ namespace app.Infra.Repository
             await _context.connect(_connectString);
             string commandBase = "SELECT idpet,idusertutor,dateborn,petname,weight,race,species,sex,castrated from pet " +
                 "where idpet = @idpet";
+            string commandGetContraIndication = "SELECT idpet,idcontraindication,description,categoria from contraindication where idpet=@idpet";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@idpet",id}
@@ -42,7 +43,10 @@ namespace app.Infra.Repository
             List<JsonObject> result = await _context.read(commandBase, parameters);
             List<PetDbDTO> dtos = result.Select(jsonObject => JsonSerializer.Deserialize<PetDbDTO>(jsonObject.ToJsonString()))
                                            .ToList();
-            Pet pet = Pet.restore(dtos[0]);
+            List<JsonObject> contraindications = await _context.read(commandGetContraIndication, parameters);
+            List<ContraindicationDTODb> contraindicationsdtos = contraindications.Select(jsonObject => JsonSerializer.Deserialize<ContraindicationDTODb>(jsonObject.ToJsonString()))
+                                           .ToList();
+            Pet pet = Pet.restore(dtos[0],contraindicationsdtos);
             _context.close();
             return pet;
         }
@@ -52,6 +56,7 @@ namespace app.Infra.Repository
             await _context.connect(_connectString);
             string commandBase = "SELECT idpet,idusertutor,dateborn,petname,weight,race,species,sex,castrated from pet " +
                 "where idusertutor = @idusertutor";
+            string commandGetContraIndication = "SELECT idpet,idcontraindication,description,categoria from contraindication where idpet=@idpet";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@idusertutor",iduser}
@@ -61,7 +66,11 @@ namespace app.Infra.Repository
                                            .ToList();
             foreach(PetDbDTO dto in dtos)
             {
-                Pet pet = Pet.restore(dto);
+                parameters["@idpet"] = dto.idpet;
+                List<JsonObject> contraindications = await _context.read(commandGetContraIndication, parameters);
+                List<ContraindicationDTODb> contraindicationsdtos = contraindications.Select(jsonObject => JsonSerializer.Deserialize<ContraindicationDTODb>(jsonObject.ToJsonString()))
+                                               .ToList();
+                Pet pet = Pet.restore(dto,contraindicationsdtos);
                 pets.Add(pet);
             }
             _context.close();
@@ -89,9 +98,26 @@ namespace app.Infra.Repository
             _context.close();
         }
 
-        public Task update(Pet pet)
+        public async Task update(Pet pet)
         {
-            throw new NotImplementedException();
+            await _context.connect(_connectString);
+            string deletContraindications = "delete from contraindication where idpet=@idpet";
+            string insertContraindications = "insert into contraindication (idpet,idcontraindication,categoria,description) " +
+                "values (@idpet,@idcontraindication,@categoria,@description)";
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
+            {
+                {"@idpet",pet.IdPet}
+            };
+            await _context.command(deletContraindications, parameters);
+            foreach(Contraindication contraindication in pet.ContraIndications)
+            {
+                parameters["@idcontraindication"] = contraindication.idcontraindication;
+                parameters["idpet"] = contraindication._idPet;
+                parameters["@description"] = contraindication.Description;
+                parameters["@categoria"] = contraindication.Type;
+                await _context.command(insertContraindications, parameters);
+            }
+            _context.close();
         }
     }
 }

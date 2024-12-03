@@ -25,7 +25,7 @@ namespace app.Infra.Repository
                 await _context.connect(_connectString);
                 string commandGetService = "select codecategory,namecategory,idservice,iduser,title,description,price from service " +
                                            "where iduser in (select iduserprimary from network where idcollaborator = @iduser)";
-                string commandBase = "SELECT codecategory,namecategory,idservice,iduser,title,description,price FROM \"service\" where idservice=@idservice";
+                string commandBase = "SELECT codecategory,namecategory,idservice,iduser,title,description,price,status FROM \"service\" where idservice=@idservice";
                 string commandsubcategory = "select subcategory.title,subcategory.idservice,subcategory.price,subcategory.idsubcategory " +
                                             "from service inner join subcategory on service.idservice = subcategory.idservice where service.idservice=@idservice";
                 string commandvaccine = "SELECT vaccine.idservice,vaccine.idvaccine,vaccine.price,vaccine.codevaccine,vaccine.nameofvaccine FROM " +
@@ -62,7 +62,7 @@ namespace app.Infra.Repository
         {
             List<Service> servicesofuser = new List<Service>();
             await _context.connect(_connectString);
-            string commandBase = "SELECT codecategory,namecategory,idservice,iduser,title,description,price FROM \"service\" where iduser = @iduser";
+            string commandBase = "SELECT codecategory,namecategory,idservice,iduser,title,description,price,status FROM \"service\" where iduser = @iduser";
             string commandsubcategory = "select subcategory.title,subcategory.idservice,subcategory.price,subcategory.idsubcategory " +
                                         "from service inner join subcategory on service.idservice = subcategory.idservice where service.iduser = @iduser";
             string commandvaccine = "SELECT vaccine.idservice,vaccine.idvaccine,vaccine.price,vaccine.codevaccine,vaccine.nameofvaccine FROM " +
@@ -102,7 +102,7 @@ namespace app.Infra.Repository
             await _context.connect(_connectString);
             string commandGetService = "select idservice from service " +
                                        "where iduser in (select iduserprimary from network where idcollaborator = @iduser)";
-            string commandBase = "select codecategory,namecategory,idservice,iduser,title,description,price from service " +
+            string commandBase = "select codecategory,namecategory,idservice,iduser,title,description,price,status from service " +
                                  "where iduser in (select iduserprimary from network where idcollaborator = @iduser)";
             string commandsubcategory = "select subcategory.title,subcategory.idservice,subcategory.price,subcategory.idsubcategory " +
                                         $"FROM subcategory where idservice in ({commandGetService})";
@@ -140,7 +140,7 @@ namespace app.Infra.Repository
         public async Task save(Service service)
         {
             await _context.connect(_connectString);
-            string commandBase = "INSERT INTO \"service\" (codecategory,namecategory,idservice,iduser,title,description,price) VALUES (@codecategory,@namecategory,@idservice,@iduser,@title,@description,@price)";
+            string commandBase = "INSERT INTO \"service\" (codecategory,namecategory,idservice,iduser,title,description,price,status) VALUES (@codecategory,@namecategory,@idservice,@iduser,@title,@description,@price,@status)";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@codecategory",service.codeCategory},
@@ -149,6 +149,7 @@ namespace app.Infra.Repository
                 {"@iduser",service.idUser },
                 {"@title",service.titleService },
                 {"@description",service.description },
+                {"@status", service.status },
                 {"@price",service.price.HasValue ? (float)service.price.Value : DBNull.Value},
             };
             await _context.command(commandBase, parameters);
@@ -199,7 +200,7 @@ namespace app.Infra.Repository
         public async Task update(Service service)
         {
             await _context.connect(_connectString);
-            string commandBase = "UPDATE  \"service\" SET codecategory=@codecategory,namecategory=@namecategory,iduser=@iduser,title=@title,description=@description,price=@price where idservice=@idservice)";
+            string commandBase = "UPDATE  \"service\" SET codecategory=@codecategory,namecategory=@namecategory,iduser=@iduser,title=@title,description=@description,price=@price, status=@status where idservice=@idservice";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@codecategory",service.codeCategory},
@@ -209,6 +210,7 @@ namespace app.Infra.Repository
                 {"@title",service.titleService },
                 {"@description",service.description },
                 {"@price",service.price },
+                {"@status",service.status },
             };
             await _context.command(commandBase, parameters);
             if (service.codeCategory == "C04")
@@ -222,7 +224,7 @@ namespace app.Infra.Repository
                 };
                 string commandDeleteVaccines = "DELETE FROM \"vaccine\" WHERE idservice = @idservice";
                 await _context.command(commandDeleteVaccines,parametersVaccine);
-                string commandRegisterVaccines = "INSERT INTO \"vaccine\" (idservice,idvaccine,codevaccine,namevaccine,price) VALUES (@idservice,@idvaccine,@codevaccine,@namevaccine,@price)";
+                string commandRegisterVaccines = "INSERT INTO \"vaccine\" (idservice,idvaccine,codevaccine,nameofvaccine,price) VALUES (@idservice,@idvaccine,@codevaccine,@namevaccine,@price)";
                 foreach (VaccineDbDTO codevaccine in service.vaccines)
                 {
                     parametersVaccine["@codevaccine"] = codevaccine.codevaccine;

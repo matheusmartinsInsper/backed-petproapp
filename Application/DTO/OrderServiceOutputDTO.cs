@@ -1,4 +1,5 @@
-﻿using app.Domain.DTO.Service;
+﻿using app.Domain.DTO.Pet;
+using app.Domain.DTO.Service;
 
 namespace app.Application.DTO
 {
@@ -34,11 +35,12 @@ namespace app.Application.DTO
         public string species { get; set; }
         public string sex { get; set; }
         public bool castrated {  get; set; }
+        public List<ContraindicationDTO> contraindications {  get; set; } 
     }
     public class Tutor
     {
         public string name { get; set; }
         public string email { get; set; }
-        public string number { get; set; }
+        public string phone { get; set; }
     }
 }

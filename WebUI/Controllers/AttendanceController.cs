@@ -22,7 +22,8 @@ namespace app.WebUI.Controllers
         private IRepositoryOrderService _repoos;
         private IRepositoryForm _repoform;
         private IRepositoryService _reposervice;
-        public AttendanceController(IRepositoryService reposervice, IRepositoryForm repoform, IRepositoryUserTutor repotutor, IRepositoryPet repopet, IRepositoryOrderService repoos, IRepositoryAttendance repoattendance, IRepositoryFile repofile) 
+        private IRepositoryProntuario _repoprontuario;
+        public AttendanceController(IRepositoryProntuario repoprontuario, IRepositoryService reposervice, IRepositoryForm repoform, IRepositoryUserTutor repotutor, IRepositoryPet repopet, IRepositoryOrderService repoos, IRepositoryAttendance repoattendance, IRepositoryFile repofile) 
         { 
             _repoattendance = repoattendance;
             _repofile = repofile;
@@ -31,6 +32,7 @@ namespace app.WebUI.Controllers
             _repopet = repopet;
             _repoform = repoform;
             _reposervice = reposervice;
+            _repoprontuario = repoprontuario;
         }
         [HttpPost]
         [Authorize]
@@ -38,7 +40,7 @@ namespace app.WebUI.Controllers
         {
             try
             {
-                CreateAttendance usecase = new CreateAttendance(_repotutor,_repopet,_repoos,_repoattendance,_repofile);
+                CreateAttendance usecase = new CreateAttendance(_repoprontuario, _repotutor,_repopet,_repoos,_repoattendance,_repofile);
                 string iduserattendance = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
                 OuputAttendanceCreate output =  await usecase.execute(idos, iduserattendance);
                 var data = new { status = "confirmed",data = output};

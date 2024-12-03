@@ -27,6 +27,7 @@ namespace app.Application.UseCase
                 petOutput.species = pet.Species;
                 petOutput.race = pet.Race;
                 petOutput.sex = pet.Sex;
+                petOutput.contraindication = pet.contraindications;
                 petsoutput.Add(petOutput);
             }
             return petsoutput;

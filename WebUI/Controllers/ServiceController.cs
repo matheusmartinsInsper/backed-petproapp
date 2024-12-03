@@ -81,13 +81,13 @@ namespace app.WebUI.Controllers
 
         [HttpGet("User")]
         [Authorize]
-        public async Task<ActionResult> GetByUser()
+        public async Task<ActionResult> GetByUser([FromQuery(Name = "posted")] bool posted)
         {
             try
             {
                 GetServicesByUser usecase = new GetServicesByUser(_reposervice);
                 string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
-                List<ServiceOutputDTO> services = await usecase.execute(iduser);
+                List<ServiceOutputDTO> services = await usecase.execute(iduser,posted);
                 var data = new { status = "confirmed", data = services};
                 return Ok(data);
             }
@@ -102,14 +102,34 @@ namespace app.WebUI.Controllers
 
         [HttpGet("NetWork")]
         [Authorize]
-        public async Task<ActionResult> GetByNetWork()
+        public async Task<ActionResult> GetByNetWork([FromQuery(Name = "posted")] bool posted)
         {
             try
             {
                 GetServicesByNetWork usecase = new GetServicesByNetWork(_reposervice,_reponet);
                 string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
-                List<ServiceOutputDTO> services = await usecase.execute(iduser);
+                List<ServiceOutputDTO> services = await usecase.execute(iduser,posted);
                 var data = new { status = "confirmed", data = services };
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    messageError = ex.Message
+                });
+            }
+        }
+        [HttpPost("Post")]
+        [Authorize]
+        public async Task<ActionResult> Postservice([FromQuery(Name = "idservice")] string idservice)
+        {
+            try
+            {
+                PostService usecase = new PostService(_reposervice, _repoclinic);
+                string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
+                await usecase.execute(idservice, iduser);
+                var data = new { status = "confirmed"};
                 return Ok(data);
             }
             catch (Exception ex)

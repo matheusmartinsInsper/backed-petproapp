@@ -37,6 +37,11 @@ namespace app.Application.UseCase
             };
             outputDTO.status = att.status;
             outputDTO.idattendance = att.idattendance;
+            outputDTO.haveanamnese = att.haveanamnese;
+            outputDTO.idform = att.idform;
+            outputDTO.idos = att.idos;
+            outputDTO.hipotese = att.hipoteses;
+            outputDTO.conclusao = att.conclusao;
             outputDTO.pet.petname = pet.PetName;
             outputDTO.pet.age = pet.Age;
             outputDTO.pet.castrated = pet.Castrated;
@@ -45,6 +50,7 @@ namespace app.Application.UseCase
             outputDTO.pet.weight = pet.Weight;
             outputDTO.pet.castrated = pet.Castrated;
             outputDTO.pet.sex = pet.Sex;
+            outputDTO.pet.contraindications = pet.contraindications;
             outputDTO.tutor.email = tutor.email;
             outputDTO.tutor.name = tutor.name;
             outputDTO.service.comments = os.comments;

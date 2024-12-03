@@ -1,4 +1,6 @@
-﻿namespace app.Application.DTO
+﻿using app.Domain.DTO.Fone;
+
+namespace app.Application.DTO
 {
     public class CollaboratorDTO
     {
@@ -7,6 +9,7 @@
         public string Email { get; set; }
         public string CPF { get; set; }
         public string Status { get; set; }
+        public string? Phone { get; set; }
         public DateTime? DataDeNascimento { get; set; }
     }
 }

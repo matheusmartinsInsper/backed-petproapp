@@ -3,6 +3,7 @@
     public class FormDbOutput
     {
             public string formid { get; set; }  
+            public string iduser { get; set; }
             public string color { get; set; }
             public string formname { get; set; }     // Correspondente a f.formname
             public string attributeid { get; set; }     // Correspondente a a.attributeid

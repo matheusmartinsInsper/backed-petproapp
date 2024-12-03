@@ -4,6 +4,7 @@ using app.Domain.DTO.User;
 using System.Text.Json.Nodes;
 using System.Text.Json;
 using app.Domain.Agregate.ObjectValues;
+using app.Domain.DTO.Fone;
 
 namespace app.Infra.Repository
 {
@@ -23,6 +24,7 @@ namespace app.Infra.Repository
             await _context.connect(_connectString);
             string commandBase = "SELECT name,email,password,\"user\".iduser,category,crmv,cpf,graduation,institution from \"user\" inner join collaborator on \"user\".iduser = collaborator.iduser " +
                 "where \"user\".iduser = @iduser";
+            string commandGetNumber = "SELECT idfone,iduser,countrycode,areacode,phone,createat FROM fone where iduser = @iduser";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@iduser",id }
@@ -30,12 +32,16 @@ namespace app.Infra.Repository
             List<JsonObject> result = await _context.read(commandBase, parameters);
             List<UserCollaboratorDb> dtos = result.Select(jsonObject => JsonSerializer.Deserialize<UserCollaboratorDb>(jsonObject.ToJsonString()))
                                            .ToList();
+            List<JsonObject> fones = await _context.read(commandGetNumber, parameters);
+            List<PhoneDTO> fonesdto = fones.Select(jsonObject => JsonSerializer.Deserialize<PhoneDTO>(jsonObject.ToJsonString()))
+                                         .ToList();
             if (dtos.Count == 0)
             {
                 _context.close();
                 return null;
-            } 
-            User user = User.restore(dtos[0]);
+            }
+            PhoneDTO fone = fonesdto.Count() == 0 ? null : fonesdto[0];
+            User user = User.restore(dtos[0],fone);
             _context.close();
             return user;
         }
@@ -45,6 +51,7 @@ namespace app.Infra.Repository
             await _context.connect(_connectString);
             string commandBase = "SELECT name,email,password,\"user\".iduser,category,crmv,cpf,graduation,institution from \"user\" inner join collaborator on \"user\".iduser = collaborator.iduser " +
                 "where \"user\".email = @email";
+            string commandGetNumber = "SELECT idfone,iduser,countrycode,areacode,phone,createat FROM fone where iduser = @iduser";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@email",email }
@@ -52,9 +59,16 @@ namespace app.Infra.Repository
             List<JsonObject> result = await _context.read(commandBase, parameters);
             List<UserCollaboratorDb> dtos = result.Select(jsonObject => JsonSerializer.Deserialize<UserCollaboratorDb>(jsonObject.ToJsonString()))
                                            .ToList();
+         
             if (dtos.Count == 0)
                 throw new Exception("user not found");
-            User user = User.restore(dtos[0]);
+            string iduser = dtos[0].iduser;
+            parameters["@iduser"] = iduser;
+            List<JsonObject> fones = await _context.read(commandGetNumber, parameters);
+            List<PhoneDTO> fonesdto = fones.Select(jsonObject => JsonSerializer.Deserialize<PhoneDTO>(jsonObject.ToJsonString()))
+                                         .ToList();
+            PhoneDTO fone = fonesdto.Count() == 0 ? null : fonesdto[0];
+            User user = User.restore(dtos[0],fone);
             _context.close();
             return user;
         }
@@ -66,6 +80,7 @@ namespace app.Infra.Repository
             string command = "select t.name,t.email,t.password,t.iduser,t.category,t.crmv,t.cpf,t.graduation,t.institution,t.dateborn from network " +
                              "inner join (select \"user\".iduser,crmv, cpf,institution,graduation,password,email,name,category,collaborator.dateborn from \"user\" inner join collaborator on \"user\".iduser = collaborator.iduser) " +
                              "as t on t.iduser = network.idcollaborator where network.iduserprimary = @iduser";
+            string commandGetNumber = "SELECT idfone,iduser,countrycode,areacode,phone,createat FROM fone where iduser = @iduser";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@iduser",iduser }
@@ -75,7 +90,13 @@ namespace app.Infra.Repository
                                            .ToList();
             foreach(UserCollaboratorDb userdb in dtos)
             {
-                User user = User.restore(userdb);
+                string id = userdb.iduser;
+                parameters["@iduser"] = id;
+                List<JsonObject> fones = await _context.read(commandGetNumber, parameters);
+                List<PhoneDTO> fonesdto = fones.Select(jsonObject => JsonSerializer.Deserialize<PhoneDTO>(jsonObject.ToJsonString()))
+                                             .ToList();
+                PhoneDTO fone = fonesdto.Count() == 0 ? null : fonesdto[0];
+                User user = User.restore(userdb,fone);
                 users.Add(user);
             }
             _context.close();
@@ -122,9 +143,24 @@ namespace app.Infra.Repository
             _context.close();
         }
 
-        public Task update(User user)
+        public async Task update(User user)
         {
-            throw new NotImplementedException();
+            await _context.connect(_connectString);
+            string commandinsertPhone = "insert into fone (iduser,idfone,phone,countrycode,areacode,createat) values (@iduser,@idfone,@phone,@countrycode,@areacode,@createat)";
+            string commanddelete = "delete from fone where iduser = @iduser";
+            Dictionary<string, object> paramns = new Dictionary<string, object>()
+            {
+                { "@iduser" ,user.id},
+                { "@idfone" ,user.Fone.idfone},
+                { "@phone" ,user.Fone.phone},
+                { "@countrycode" ,user.Fone.countrycode},
+                { "@areacode" ,user.Fone.areacode},
+                { "@createat" ,user.Fone.createat}
+            };
+            await _context.command(commanddelete, paramns);
+            await _context.command(commandinsertPhone, paramns);
+            _context.close();
+            return;
         }
     }
 }

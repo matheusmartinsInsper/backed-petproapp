@@ -13,13 +13,15 @@ namespace app.Application.UseCase
         private IRepositoryOrderService _repoos;
         private IRepositoryPet _repopet;
         private IRepositoryUserTutor _repotutor;
-        public CreateAttendance(IRepositoryUserTutor repotutor, IRepositoryPet repopet, IRepositoryOrderService repoos, IRepositoryAttendance repoattendance,IRepositoryFile repofile)
+        private IRepositoryProntuario _repoprontuario;
+        public CreateAttendance(IRepositoryProntuario repoprontuario, IRepositoryUserTutor repotutor, IRepositoryPet repopet, IRepositoryOrderService repoos, IRepositoryAttendance repoattendance,IRepositoryFile repofile)
         {
             _repoattendance = repoattendance;
             _repofile = repofile;
             _repoos = repoos;
             _repopet = repopet;
             _repotutor = repotutor;
+            _repoprontuario = repoprontuario;
         }
         public async Task<OuputAttendanceCreate> execute(string idos,string iduserattendance)
         {
@@ -30,6 +32,7 @@ namespace app.Application.UseCase
                 {
                     Pet pet = await _repopet.get(os.idPet);
                     User tutor = await _repotutor.get(pet.IdUserTutor);
+                    Prontuario prontuario = await _repoprontuario.getByIdPet(pet.IdPet);
                     AttendanceDTO attendancedto = new AttendanceDTO()
                     {
                         iduserattendance = iduserattendance,
@@ -42,6 +45,11 @@ namespace app.Application.UseCase
                         IdOrderService = os.idorderservice
                     };
                     Attendance attendance = Attendance.create(attendancedto);
+                    if(prontuario != null)
+                    {
+                        prontuario.addattendance(attendance.idattendance);
+                        await _repoprontuario.update(prontuario);
+                    }
                     await _repoattendance.save(attendance);
                     os.StartOrder(attendance.idattendance);
                     await _repoos.update(os);

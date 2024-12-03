@@ -5,12 +5,12 @@ using app.Domain.DTO.User;
 
 namespace app.Application.UseCase
 {
-    public class GetMemberOfNetwork
+    public class GetMemberOfNetworkByOs
     {
         private IRepositoryNetWork _reponet;
         private IRepositoryOrderService _repoos;
         private IRepositoryUserClinic _repoclinic;
-        public GetMemberOfNetwork(IRepositoryNetWork reponet, IRepositoryOrderService repoos, IRepositoryUserClinic repoclinic)
+        public GetMemberOfNetworkByOs(IRepositoryNetWork reponet, IRepositoryOrderService repoos, IRepositoryUserClinic repoclinic)
         {
             _reponet = reponet;
             _repoos = repoos;

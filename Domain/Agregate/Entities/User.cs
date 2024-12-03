@@ -1,4 +1,5 @@
 ﻿using app.Domain.Agregate.ObjectValues;
+using app.Domain.DTO.Fone;
 using app.Domain.DTO.User;
 
 namespace app.Domain.Agregate.Entities
@@ -6,6 +7,7 @@ namespace app.Domain.Agregate.Entities
     public class User
     {
         private Email Email { get; set; }
+        private PhoneDTO? _Fone { get; set; }
         public string email;
         public string name;
         public string password;
@@ -28,6 +30,7 @@ namespace app.Domain.Agregate.Entities
         public string categoryCode { get { return _categoryCode; } }
         public string plan { get { return _plan; } }    
         public DateTime dateborn { get { return _dateborn; } }
+        public PhoneDTO? Fone { get { return _Fone; } }
         private User() { }
         public static User create(UserTutor user)
         {
@@ -82,6 +85,18 @@ namespace app.Domain.Agregate.Entities
             _user._categoryCode = "Collaborator";
             return _user;
         }
+        public static User restore(UserTutorDb user, PhoneDTO fone)
+        {
+            User _user = new User();
+            _user.email = user.email;
+            _user.name = user.name;
+            _user.password = user.password;
+            _user._id = user.iduser;
+            _user._categoryCode = user.category;
+            _user._dateborn = user.dateborn;
+            _user._Fone = fone;
+            return _user;
+        }
         public static User restore(UserTutorDb user)
         {
             User _user = new User();
@@ -93,7 +108,7 @@ namespace app.Domain.Agregate.Entities
             _user._dateborn = user.dateborn;
             return _user;
         }
-        public static User restore(UserCollaboratorDb user)
+        public static User restore(UserCollaboratorDb user, PhoneDTO fone)
         {
             User _user = new User();
             _user.email = user.email;
@@ -106,9 +121,10 @@ namespace app.Domain.Agregate.Entities
             _user.graduation = user.graduation;
             _user.institution = user.institution;
             _user._dateborn = user.dateborn;
+            _user._Fone = fone;
             return _user;
         }
-        public static User restore(UserBaseDTO user)
+        public static User restore(UserBaseDTO user, PhoneDTO fone)
         {
             User _user = new User();
             _user.email = user.email;
@@ -116,6 +132,7 @@ namespace app.Domain.Agregate.Entities
             _user.password = user.password;
             _user._id = user.iduser;
             _user._categoryCode = user.category;
+            _user._Fone = fone;
             return _user;
         }
         public void setPassWord(string pass)
@@ -125,6 +142,17 @@ namespace app.Domain.Agregate.Entities
                 throw new Exception("invalid password");
             }
             password = pass;
+        }
+        public void addFone(PhoneDTOInput phone)
+        {
+            PhoneDTO fone = new PhoneDTO();
+            fone.areacode = phone.areacode;
+            fone.countrycode = phone.countrycode;
+            fone.phone = phone.phone;
+            fone.iduser = _id;
+            fone.idfone = Guid.NewGuid().ToString("N");
+            fone.createat = DateTime.Now;
+            _Fone = fone;
         }
     }
 }

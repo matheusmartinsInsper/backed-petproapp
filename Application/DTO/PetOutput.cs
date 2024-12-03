@@ -1,4 +1,6 @@
-﻿namespace app.Application.DTO
+﻿using app.Domain.DTO.Pet;
+
+namespace app.Application.DTO
 {
     public class PetOutput
     {
@@ -11,5 +13,6 @@
         public string species { get; set; }
         public string sex { get; set; }
         public bool castrated { get; set; }
+        public List<ContraindicationDTO> contraindication { get; set; }
     }
 }

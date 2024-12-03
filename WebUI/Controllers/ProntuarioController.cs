@@ -20,7 +20,8 @@ namespace app.WebUI.Controllers
         private IRepositoryUserClinic _repoclinic;
         private IRepositoryPet _repopet;
         private IRepositoryProntuario _repoprontuario;
-        public ProntuarioController(IRepositoryProntuario repoprontuario, IRepositoryPet repopet, IRepositoryUserClinic repoclinic, IRepositoryOrderService repository, IRepositoryService reposervice, IRepositoryUserTutor repouser, IRepositoryPortfolioClient repoport)
+        private IRepositoryAttendance _repoattendance;
+        public ProntuarioController(IRepositoryAttendance repoattendance, IRepositoryProntuario repoprontuario, IRepositoryPet repopet, IRepositoryUserClinic repoclinic, IRepositoryOrderService repository, IRepositoryService reposervice, IRepositoryUserTutor repouser, IRepositoryPortfolioClient repoport)
         {
             _repository = repository;
             _reposervice = reposervice;
@@ -29,6 +30,7 @@ namespace app.WebUI.Controllers
             _repoclinic = repoclinic;
             _repopet = repopet;
             _repoprontuario = repoprontuario;
+            _repoattendance = repoattendance;
         }
         [HttpGet]
         [Authorize]
@@ -36,9 +38,29 @@ namespace app.WebUI.Controllers
         {
             try
             {
-                GetProntuarioByUser usecase = new GetProntuarioByUser(_repoprontuario, _repopet,_repoclinic,_repository,_reposervice,_repouser,_repoport);
+                GetProntuariosByUser usecase = new GetProntuariosByUser(_repoattendance, _repoprontuario, _repopet,_repoclinic,_repository,_reposervice,_repouser,_repoport);
                 string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
-                List< OutputProntuarioDTO> prontuarios = await usecase.execute(iduser);
+                List<OutPutProntuariosDTO> prontuarios = await usecase.execute(iduser);
+                var data = new { status = "confirmed", data = prontuarios };
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    messageError = ex.Message
+                });
+            }
+        }
+        [HttpGet("Pet")]
+        [Authorize]
+        public async Task<ActionResult> GetProntuarioOfPet()
+        {
+            try
+            {
+                GetProntuariosByUser usecase = new GetProntuariosByUser(_repoattendance, _repoprontuario, _repopet, _repoclinic, _repository, _reposervice, _repouser, _repoport);
+                string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
+                List<OutPutProntuariosDTO> prontuarios = await usecase.execute(iduser);
                 var data = new { status = "confirmed", data = prontuarios };
                 return Ok(data);
             }

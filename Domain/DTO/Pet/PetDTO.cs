@@ -9,5 +9,6 @@
         public string species   { get; set; }
         public string sex { get; set; }
         public bool castrated { get; set; }
+        public List<ContraindicationDTO>? ContraindicationDTO { get; set; }
     }
 }

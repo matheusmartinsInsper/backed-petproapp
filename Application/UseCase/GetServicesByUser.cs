@@ -11,9 +11,11 @@ namespace app.Application.UseCase
         {
             _reposervice = reposervice;
         }
-        public async Task<List<ServiceOutputDTO>> execute(string iduser)
+        public async Task<List<ServiceOutputDTO>> execute(string iduser, bool posted)
         {
             List<Service> services = await _reposervice.getbyuser(iduser);
+            if (posted == true)
+                services = services.Where((service) => service.status == "Postado").ToList();
             List<ServiceOutputDTO> outputs = new List<ServiceOutputDTO>();
             foreach (Service service in services)
             {
@@ -27,6 +29,7 @@ namespace app.Application.UseCase
                 outputDTO.Vacinas = service.vaccines;
                 outputDTO.Subcategorias = service.subcategories;
                 outputDTO.Atendimento = service.attendancemodels;
+                outputDTO.Status = service.status;
                 outputs.Add(outputDTO);
             }
             return outputs;

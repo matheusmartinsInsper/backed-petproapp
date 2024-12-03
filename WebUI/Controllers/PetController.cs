@@ -42,6 +42,28 @@ namespace app.WebUI.Controllers
                 });
             }        
         }
+
+        [HttpPost("Contraindication")]
+        [Authorize]
+        public async Task<ActionResult> addContraindication([FromBody] ContraindicationDTO contraindication, [FromQuery(Name = "idpet")] string idpet)
+        {
+            try
+            {
+                string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
+                AddContraindication usecase = new AddContraindication(_repopet, _repotutor);
+                await usecase.execute(idpet, iduser,contraindication);
+                var data = new { status = "confirmed" };
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    messageError = ex.Message
+                });
+            }
+        }
+
         [HttpGet]
         [Authorize]
         public async Task<ActionResult<List<PetOutput>>> GetPets()

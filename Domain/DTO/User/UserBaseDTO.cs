@@ -1,4 +1,6 @@
-﻿namespace app.Domain.DTO.User
+﻿using app.Domain.DTO.Fone;
+
+namespace app.Domain.DTO.User
 {
     public class UserBaseDTO
     {
@@ -7,5 +9,6 @@
         public string password { get; set; }
         public string iduser { get; set; }
         public string category { get; set; }
+        public PhoneDTO? Phone { get; set; }
     }
 }

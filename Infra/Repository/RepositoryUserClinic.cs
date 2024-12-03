@@ -4,6 +4,7 @@ using app.Domain.DTO.User;
 using System.Text.Json.Nodes;
 using System.Text.Json;
 using app.Domain.Agregate.ObjectValues;
+using app.Domain.DTO.Fone;
 
 namespace app.Infra.Repository
 {
@@ -22,20 +23,26 @@ namespace app.Infra.Repository
             await _context.connect(_connectString);
             string commandBase = "SELECT name,email,password,\"user\".iduser,category,plan,cnpj from \"user\" left join clinic on \"user\".iduser = clinic.iduser " +
                 "where \"user\".iduser = @iduser";
+            string commandGetNumber = "SELECT idfone,iduser,countrycode,areacode,phone,createat FROM fone where iduser = @iduser";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@iduser",id }
             };
             List<JsonObject> result = await _context.read(commandBase, parameters);
+            List<JsonObject> fones = await _context.read(commandGetNumber, parameters);
+            List<PhoneDTO> fonesdto = fones.Select(jsonObject => JsonSerializer.Deserialize<PhoneDTO>(jsonObject.ToJsonString()))
+                                         .ToList();
             List<UserTutorDb> dtos = result.Select(jsonObject => JsonSerializer.Deserialize<UserTutorDb>(jsonObject.ToJsonString()))
                                            .ToList();
+           
+            PhoneDTO fone = fonesdto.Count()==0?null: fonesdto[0];
             if (dtos.Count == 0)
             {
                 _context.close();
                 return null;
             }
             _context.close();
-            User user = User.restore(dtos[0]);
+            User user = User.restore(dtos[0],fone);
             return user;
         }
 
@@ -44,6 +51,7 @@ namespace app.Infra.Repository
             await _context.connect(_connectString);
             string commandBase = "SELECT name,email,password,\"user\".iduser,category,plan,cnpj from \"user\" inner join clinic on \"user\".iduser = clinic.iduser " +
                 "where \"user\".email = @email";
+            string commandGetNumber = "SELECT idfone,iduser,countrycode,areacode,phone,createat FROM fone where iduser = @iduser";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@email",email }
@@ -53,8 +61,17 @@ namespace app.Infra.Repository
                                            .ToList();
             if (dtos.Count == 0)
                 throw new Exception("user not found");
+            string iduser = dtos[0].iduser;
+            Dictionary<string, object> parametersiduser = new Dictionary<string, object>()
+            {
+                {"@iduser",iduser }
+            };
+            List<JsonObject> fones = await _context.read(commandGetNumber, parametersiduser);
+            List<PhoneDTO> fonesdto = fones.Select(jsonObject => JsonSerializer.Deserialize<PhoneDTO>(jsonObject.ToJsonString()))
+                                          .ToList();
+            PhoneDTO fone = fonesdto.Count() == 0 ? null : fonesdto[0];
+            User user = User.restore(dtos[0],fone);
             _context.close();
-            User user = User.restore(dtos[0]);
             return user;
         }
 

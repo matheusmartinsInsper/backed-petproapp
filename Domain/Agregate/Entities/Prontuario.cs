@@ -70,7 +70,7 @@ namespace app.Domain.Agregate.Entities
         public void addattendance(string idattendance)
         {
             if (_idsattendance.Contains(idattendance))
-                throw new Exception("Esse atendimento já está adicionada ao prontuario");
+                throw new Exception("Esse atendimento já foi adicionado ao prontuario");
             _idsattendance.Add(idattendance);
         }
     }

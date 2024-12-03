@@ -54,7 +54,7 @@ namespace app.WebUI.Controllers
         {
             try
             {
-                GetMemberOfNetwork usecase = new GetMemberOfNetwork(_reponetwork, _repoos, _repoclinic);
+                GetMemberOfNetworkByOs usecase = new GetMemberOfNetworkByOs(_reponetwork, _repoos, _repoclinic);
                 List<UserBaseDTO> members = await usecase.execute(idos);
                 return Ok(members);
             }
