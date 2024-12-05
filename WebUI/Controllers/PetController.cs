@@ -45,13 +45,33 @@ namespace app.WebUI.Controllers
 
         [HttpPost("Contraindication")]
         [Authorize]
-        public async Task<ActionResult> addContraindication([FromBody] ContraindicationDTO contraindication, [FromQuery(Name = "idpet")] string idpet)
+        public async Task<ActionResult> addContraindication([FromBody] ContraindicationDTOInput contraindication, [FromQuery(Name = "idpet")] string idpet)
         {
             try
             {
                 string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
                 AddContraindication usecase = new AddContraindication(_repopet, _repotutor);
                 await usecase.execute(idpet, iduser,contraindication);
+                var data = new { status = "confirmed" };
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    messageError = ex.Message
+                });
+            }
+        }
+        [HttpDelete("Contraindication")]
+        [Authorize]
+        public async Task<ActionResult> removeContraindication([FromQuery(Name = "idpet")] string idpet, [FromQuery(Name = "idcontraindication")] string idcontraindication)
+        {
+            try
+            {
+                string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
+                RemoveContraindication usecase = new RemoveContraindication(_repopet, _repotutor);
+                await usecase.execute(iduser, idcontraindication, idpet);
                 var data = new { status = "confirmed" };
                 return Ok(data);
             }

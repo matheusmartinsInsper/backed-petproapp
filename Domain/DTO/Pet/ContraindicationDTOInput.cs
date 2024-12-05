@@ -1,9 +1,8 @@
 ﻿namespace app.Domain.DTO.Pet
 {
-    public class ContraindicationDTO
+    public class ContraindicationDTOInput
     {
         public string categoria { get; set; }
         public string description { get; set; }
-        public string idcontraindication { get; set; }
     }
 }

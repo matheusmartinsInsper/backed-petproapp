@@ -46,3 +46,4 @@ C:\Users\mateu\PETPRO\backend\petprocore\app\app\bin\Debug\net8.0\Newtonsoft.Jso
 C:\Users\mateu\PETPRO\backend\petprocore\app\app\bin\Debug\net8.0\Stripe.net.dll
 C:\Users\mateu\PETPRO\backend\petprocore\app\app\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
 C:\Users\mateu\PETPRO\backend\petprocore\app\app\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\mateu\PETPRO\backend\petprocore\app\app\obj\Debug\net8.0\app.sourcelink.json

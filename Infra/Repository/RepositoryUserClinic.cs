@@ -92,6 +92,23 @@ namespace app.Infra.Repository
             User user = User.restore(dtos[0]);
             return user;
         }
+        public async Task<User> getUserBaseByEmail(string email)
+        {
+            await _context.connect(_connectString);
+            string commandBase = "SELECT name,email,password,iduser,category from \"user\" where \"user\".email = @email";
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
+            {
+                {"@email",email }
+            };
+            List<JsonObject> result = await _context.read(commandBase, parameters);
+            List<UserTutorDb> dtos = result.Select(jsonObject => JsonSerializer.Deserialize<UserTutorDb>(jsonObject.ToJsonString()))
+                                           .ToList();
+            if (dtos.Count == 0)
+                throw new Exception("user not found");
+            _context.close();
+            User user = User.restore(dtos[0]);
+            return user;
+        }
 
         public async Task save(User user)
         {

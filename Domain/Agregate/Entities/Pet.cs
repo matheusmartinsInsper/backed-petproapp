@@ -16,8 +16,8 @@ namespace app.Domain.Agregate.Entities
         private string _species;
         private string _sex;
         private bool _castrated;
-        private List<Contraindication> _contraindications;
-        public List<ContraindicationDTO> contraindications;
+        private List<Contraindication> _Contraindications;
+        private List<ContraindicationDTO> _contraindications;
         public string IdUserTutor { get { return _idusertutor; } }
         public string IdPet { get { return _idpet; } }
         public DateTime DateBorn { get { return _dateborn; } }
@@ -28,7 +28,8 @@ namespace app.Domain.Agregate.Entities
         public string Species { get { return _species; } }
         public string Sex { get { return _sex; } }
         public bool Castrated { get { return _castrated; } }
-        public List<Contraindication> ContraIndications { get { return _contraindications; } }
+        public List<Contraindication> ContraIndications { get { return _Contraindications; } }
+        public List<ContraindicationDTO> contraindications { get { return _contraindications; } }
         private Pet() { }
         public static Pet create(PetDTOInputUseCase petdto)
         {
@@ -68,14 +69,14 @@ namespace app.Domain.Agregate.Entities
                 Contraindication contraindication = Contraindication.create(contr.description, pet._idpet, contr.categoria);
                 contraindications.Add(contraindication);
             }
-            pet._contraindications = contraindications;
+            pet._Contraindications = contraindications;
             return pet;
         }
         public static Pet restore(PetDbDTO petdto,List<ContraindicationDTODb> contraindications)
         {
             Pet pet = new Pet();
-            pet._contraindications = new List<Contraindication>();
-            pet.contraindications = new List<ContraindicationDTO>();
+            pet._Contraindications = new List<Contraindication>();
+            pet._contraindications = new List<ContraindicationDTO>();
             int mounths = DateTime.Now.Month - petdto.dateborn.Month;
             int year = DateTime.Now.Year - petdto.dateborn.Year;
             pet._idusertutor = petdto.idusertutor;
@@ -97,26 +98,27 @@ namespace app.Domain.Agregate.Entities
 
                 contraindicationdto.categoria = contr.categoria;
                 contraindicationdto.description = contr.description;
+                contraindicationdto.idcontraindication = contr.idcontraindication;
 
                 contraindication._idcontraindication = contr.idcontraindication;
                 contraindication.Type = contr.categoria;
                 contraindication._idPet = contr.idpet;
                 contraindication.Description = contr.description;
-                pet._contraindications.Add(contraindication);
-                pet.contraindications.Add(contraindicationdto);
+                pet._Contraindications.Add(contraindication);
+                pet._contraindications.Add(contraindicationdto);
             }
             return pet;
         }
-        public void addContraindication(ContraindicationDTO contraindicationdto)
+        public void addContraindication(ContraindicationDTOInput contraindicationdto)
         {
             Contraindication contraindication = Contraindication.create(contraindicationdto.description, _idpet, contraindicationdto.categoria);
-            _contraindications.Add(contraindication);
+            _Contraindications.Add(contraindication);
             return;
         }
         public void removeContraindication(string idcontraindication)
         {
-            Contraindication contr = _contraindications.Where((x)=>x.idcontraindication == idcontraindication).FirstOrDefault();    
-            _contraindications.Remove(contr);
+            Contraindication contr = _Contraindications.Where((x)=>x.idcontraindication == idcontraindication).FirstOrDefault();    
+            _Contraindications.Remove(contr);
             return;
         }
     }
@@ -129,8 +131,14 @@ namespace app.Domain.Agregate.Entities
         public enum ContraindicationType
         {
             Alergia,
-            AlimentosProibidos,
-            ProdutosProibidos
+            Convívio,
+            Medicamentos,
+            Cirurgias,
+            Vacinas,
+            Alimentação,
+            AtividadeFisica,
+            Comportamento,
+            Outros
         }
         public ContraindicationType _typeEnum;
         public string Type

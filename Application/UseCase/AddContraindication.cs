@@ -14,7 +14,7 @@ namespace app.Application.UseCase
             _repopet = repopet;
             _repotutor = repotutor;
         }
-        public async Task execute(string idpet,string iduser, ContraindicationDTO contraindication)
+        public async Task execute(string idpet,string iduser, ContraindicationDTOInput contraindication)
         {
            User tutor = await _repotutor.get(iduser);
            Pet pet = await _repopet.get(idpet);

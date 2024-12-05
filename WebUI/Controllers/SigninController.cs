@@ -46,12 +46,12 @@ namespace app.WebUI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPost("Clinic")]
-        public async Task<ActionResult> SigninUserClinic([FromBody] SigninUserDTO user)
+        [HttpPost("Platform")]
+        public async Task<ActionResult> SigninUserPlatform([FromBody] SigninUserDTO user)
         {
             try
             {
-                SigninUserClinic usecase = new SigninUserClinic(_repoclinic, _tokenService);
+                SigninUserPlatform usecase = new SigninUserPlatform(_repoclinic, _tokenService,_repocollaborator);
                 OutPutSignin output = await usecase.execute(user.email, user.password);
                 Response.Headers.Add("Token", output.token);
                 return Ok(output);

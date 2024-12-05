@@ -9,5 +9,6 @@ namespace app.Application.IRepository
         Task<User> get(string id);
         Task<User> getByEmail(string email);
         Task<User> getUserBase(string id);
+        Task<User> getUserBaseByEmail(string email);    
     }
 }
