@@ -40,6 +40,8 @@ builder.Services.AddScoped<IRepositoryAttendance, RepositoryAttendance>();
 builder.Services.AddScoped<IRepositoryProntuario, RepositoryProntuario>();
 builder.Services.AddScoped<IRepositoryFile, RepositoryFile>();
 builder.Services.AddScoped<IRepositoryForm, RepositoryForm>();
+builder.Services.AddScoped<IRepositoryItem,RepositoryItem>();
+builder.Services.AddScoped<IRepositoryStock, RepositoryStock>();
 builder.Services.AddScoped<IRepositoryPortfolioClient, RepositoryPortfolioClient>();
 builder.Services.AddScoped<ITokenService, TokenServiceSignin>();
 builder.Services.AddScoped<IMessage,Message>();

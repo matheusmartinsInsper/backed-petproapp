@@ -42,7 +42,7 @@ namespace app.Domain.Agregate.Entities
                                    && petdto.dateborn.Year >= DateTime.Now.Year
                                    ? throw new Exception("Date invalid") : petdto.dateborn;
             pet._weight = petdto.weight;
-            pet._sex = petdto.sex;
+            pet._sex = petdto.sex=="Macho"||petdto.sex=="Femea"?petdto.sex: throw new Exception("Sexo invalido - validos (Macho,Femea)");
             pet._race = petdto.race;
             pet._castrated = petdto.castrated;
             pet._species = petdto.species == "Canina" || petdto.species == "Felina" ? petdto.species: throw new Exception("Especie nao existente");
