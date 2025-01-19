@@ -21,23 +21,35 @@ namespace app.Infra.Repository
             await _context.connect(_connectString);
 
             // Consulta base para a tabela "item"
-            string commandBase = "SELECT itemid, iduser, category, description, name, unity, datecreate FROM \"item\" WHERE itemid = @itemid";
+            string commandBase = "SELECT itemid, iduser, category, description, name, unity, datecreate,wasexclude FROM \"item\" WHERE itemid = @itemid and wasexclude=false";
 
             // Consulta para buscar os tamanhos dos itens na tabela "itemsize"
             string commandGetSizes = "SELECT itemsize.iditemsize, itemsize.iditem, itemsize.size, itemsize.price, itemsize.avalaible FROM \"itemsize\" inner join item on itemsize.iditem=item.itemid where item.itemid=@itemid";
+            string commandgetsummaries = "SELECT summary from summaries where iditem = @iditem";
+            string commandgetspecifications = "SELECT tag,name from specification where iditem = @iditem";
 
             Dictionary<string, object> parameters = new Dictionary<string, object>()
              {
                {"@itemid", id}
              };
-           
+            Dictionary<string, object> parametersid = new Dictionary<string, object>()
+             {
+               {"@iditem", id}
+             };
+
             // Realiza a leitura dos itens associados ao usuário
             List<JsonObject> result = await _context.read(commandBase, parameters);
             List<JsonObject> sizes = await _context.read(commandGetSizes, parameters);
+            List<JsonObject> summaries = await _context.read(commandgetsummaries, parametersid);
+            List<JsonObject> specifications = await _context.read(commandgetspecifications, parametersid);
 
             List<ItemDTODb> itemDtos = result.Select(jsonObject => JsonSerializer.Deserialize<ItemDTODb>(jsonObject.ToJsonString()))
                                              .ToList();
             List<ItemSizeDTODb> sizesdto = sizes.Select(jsonObject => JsonSerializer.Deserialize<ItemSizeDTODb>(jsonObject.ToJsonString()))
+                                            .ToList();
+            List<Summary> summariesdto = summaries.Select(jsonObject => JsonSerializer.Deserialize<Summary>(jsonObject.ToJsonString()))
+                                            .ToList();
+            List<Specification> specificationsdto = specifications.Select(jsonObject => JsonSerializer.Deserialize<Specification>(jsonObject.ToJsonString()))
                                             .ToList();
 
             if (itemDtos.Count == 0)
@@ -45,7 +57,7 @@ namespace app.Infra.Repository
                 _context.close();
                 return null;
             }
-            Item item = Item.restore(itemDtos.FirstOrDefault(), sizesdto);
+            Item item = Item.restore(itemDtos.FirstOrDefault(), sizesdto, summariesdto, specificationsdto);
             _context.close();
 
             return item;
@@ -53,55 +65,63 @@ namespace app.Infra.Repository
 
         public async Task<List<Item>> getbyiduser(string id)
         {
-          
-                await _context.connect(_connectString);
 
-                List<Item> items = new List<Item>();
+            await _context.connect(_connectString);
 
-                // Consulta base para a tabela "item"
-                string commandBase = "SELECT itemid, iduser, category, description, name, unity, datecreate FROM \"item\" WHERE iduser = @iduser";
+            List<Item> items = new List<Item>();
 
-                // Consulta para buscar os tamanhos dos itens na tabela "itemsize"
-                string commandGetSizes = "SELECT iditemsize, iditem, size, price, avalaible FROM \"itemsize\" WHERE iditem = @iditem";
+            // Consulta base para a tabela "item"
+            string commandBase = "SELECT itemid, iduser, category, description, name, unity, datecreate, wasexclude FROM \"item\" WHERE iduser = @iduser and wasexclude=false";
 
-                Dictionary<string, object> parameters = new Dictionary<string, object>()
+            // Consulta para buscar os tamanhos dos itens na tabela "itemsize"
+            string commandGetSizes = "SELECT iditemsize, iditem, size, price, avalaible FROM \"itemsize\" WHERE iditem = @iditem";
+            string commandgetsummaries = "SELECT summary from summaries where iditem = @iditem";
+            string commandgetspecifications = "SELECT tag,name from specification where iditem = @iditem";
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>()
     {
         {"@iduser", id}
     };
 
-                Dictionary<string, object> parameterIdItem = new Dictionary<string, object>();
+            Dictionary<string, object> parameterIdItem = new Dictionary<string, object>();
 
-                // Realiza a leitura dos itens associados ao usuário
-                List<JsonObject> result = await _context.read(commandBase, parameters);
+            // Realiza a leitura dos itens associados ao usuário
+            List<JsonObject> result = await _context.read(commandBase, parameters);
 
-                List<ItemDTODb> itemDtos = result.Select(jsonObject => JsonSerializer.Deserialize<ItemDTODb>(jsonObject.ToJsonString()))
-                                                 .ToList();
+            List<ItemDTODb> itemDtos = result.Select(jsonObject => JsonSerializer.Deserialize<ItemDTODb>(jsonObject.ToJsonString()))
+                                             .ToList();
 
-                if (itemDtos.Count == 0)
-                {
-                    _context.close();
-                    return null;
-                }
-
-                foreach (ItemDTODb itemDto in itemDtos)
-                {
-                    parameterIdItem["@iditem"] = itemDto.itemid;
-
-                    // Busca os tamanhos do item
-                    List<JsonObject> sizesResult = await _context.read(commandGetSizes, parameterIdItem);
-
-                    List<ItemSizeDTODb> sizes = sizesResult.Select(jsonObject => JsonSerializer.Deserialize<ItemSizeDTODb>(jsonObject.ToJsonString()))
-                                                           .ToList();
-
-                    // Restaura o objeto Item usando os dados do banco e os tamanhos associados
-                    Item restoredItem = Item.restore(itemDto, sizes);
-
-                    items.Add(restoredItem);
-                }
-
+            if (itemDtos.Count == 0)
+            {
                 _context.close();
+                return null;
+            }
 
-                return items;
+            foreach (ItemDTODb itemDto in itemDtos)
+            {
+                parameterIdItem["@iditem"] = itemDto.itemid;
+
+                // Busca os tamanhos do item
+                List<JsonObject> sizesResult = await _context.read(commandGetSizes, parameterIdItem);
+                List<JsonObject> summaries = await _context.read(commandgetsummaries, parameterIdItem);
+                List<JsonObject> specifications = await _context.read(commandgetspecifications, parameterIdItem);
+
+                List<ItemSizeDTODb> sizes = sizesResult.Select(jsonObject => JsonSerializer.Deserialize<ItemSizeDTODb>(jsonObject.ToJsonString()))
+                                                       .ToList();
+                List<Summary> summariesdto = summaries.Select(jsonObject => JsonSerializer.Deserialize<Summary>(jsonObject.ToJsonString()))
+                                           .ToList();
+                List<Specification> specificationsdto = specifications.Select(jsonObject => JsonSerializer.Deserialize<Specification>(jsonObject.ToJsonString()))
+                                                .ToList();
+
+                // Restaura o objeto Item usando os dados do banco e os tamanhos associados
+                Item restoredItem = Item.restore(itemDto, sizes, summariesdto, specificationsdto);
+
+                items.Add(restoredItem);
+            }
+
+            _context.close();
+
+            return items;
         }
 
         public async Task save(Item item)
@@ -110,7 +130,7 @@ namespace app.Infra.Repository
             await _context.connect(_connectString);
 
             // Comando para inserir na tabela item
-            string commandItem = "INSERT INTO item (itemid, iduser, category, description, name, unity, datecreate) VALUES (@itemid, @iduser, @category, @description, @name, @unity, @datecreate)";
+            string commandItem = "INSERT INTO item (itemid, iduser, category, description, name, unity, datecreate,wasexclude) VALUES (@itemid, @iduser, @category, @description, @name, @unity, @datecreate,@wasexclude)";
 
             // Parâmetros para o comando item
             Dictionary<string, object> parametersItem = new Dictionary<string, object>()
@@ -121,7 +141,8 @@ namespace app.Infra.Repository
         { "@description", item.description },
         { "@name", item.name },
         { "@unity", item.unity },
-        { "@datecreate", item.datecreate }
+        { "@datecreate", item.datecreate },
+        {"@wasexclude", item.wasexclude }
     };
 
             // Executa o comando para salvar o item
@@ -129,30 +150,60 @@ namespace app.Infra.Repository
 
             // Comando para inserir na tabela itemsize
             string commandItemSize = "INSERT INTO itemsize (iditem, iditemsize, size, price, avalaible) VALUES (@iditem, @iditemsize, @size, @price, @avalaible)";
-
+            string commandSpecifications = "INSERT INTO specification (iditem,tag,name) VALUES (@iditem,@tag,@name)";
+            string commandSummary = "INSERT INTO summaries (iditem,summary) VALUES (@iditem,@summary)";
             // Loop pelos tamanhos associados ao item
             foreach (var size in item.sizes)
             {
                 Dictionary<string, object> parametersItemSize = new Dictionary<string, object>()
-        {
-            { "@iditem", size.iditem },
-            { "@iditemsize", size.iditemsize },
-            { "@size", size.size },
-            { "@price", size.price },
-            { "@avalaible", size.avalaible }
-        };
-
-                // Executa o comando para salvar o tamanho
+                {
+                    { "@iditem", size.iditem },
+                    { "@iditemsize", size.iditemsize },
+                    { "@size", size.size },
+                    { "@price", size.price },
+                    { "@avalaible", size.avalaible }
+                };
                 await _context.command(commandItemSize, parametersItemSize);
             }
-
-            // Fecha a conexão
+            foreach (Specification specification in item.specificationsdto)
+            {
+                Dictionary<string, object> parametersspecifications = new Dictionary<string, object>()
+                {
+                    { "@iditem", item.itemid },
+                    { "@tag", specification.tag },
+                    { "@name", specification.name }
+                };
+                await _context.command(commandSpecifications, parametersspecifications);
+            }
+            foreach (Summary summary in item.summaries)
+            {
+                Dictionary<string, object> parameterssummaries = new Dictionary<string, object>()
+                {
+                    { "@iditem", item.itemid },
+                    { "@summary", summary.summary }
+                };
+                await _context.command(commandSummary, parameterssummaries);
+            }
             _context.close();
         }
 
-        public Task udpate(Item item)
+        public async Task udpate(Item item)
         {
-            throw new NotImplementedException();
+            await _context.connect(_connectString);
+            string commandupdate = "UPDATE item SET category=@category,description=@description,name=@name,unity=@unity,wasexclude=@wasexclude WHERE itemid=@itemid";
+            Dictionary<string, object> parametersItem = new Dictionary<string, object>()
+    {
+        { "@itemid", item.itemid },
+        { "@iduser", item.iduser },
+        { "@category", item.category },
+        { "@description", item.description },
+        { "@name", item.name },
+        { "@unity", item.unity },
+        { "@datecreate", item.datecreate },
+        {"@wasexclude", item.wasexclude }
+    };
+            await _context.command(commandupdate, parametersItem);
+            return;
         }
     }
 }

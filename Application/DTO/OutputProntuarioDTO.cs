@@ -4,12 +4,12 @@ namespace app.Application.DTO
 {
     public class OutputProntuarioDTO
     {
-        public Tutor tutor { get; set; }
-        public PetOS pet {  get; set; }
         public string idprontuario { get; set; }
         public DateTime datecreate { get; set; }
+        public Tutor tutor { get; set; }
+        public PetOS pet {  get; set; }
         public List<OutputOsFromProntuario> orders { get; set; }
-        public List<string> idsattendance {  get; set; }
+        public List<AttendanceOutPutOfProntuario> attendances {  get; set; }
     }
     public class OutputOsFromProntuario
     {
@@ -31,4 +31,16 @@ namespace app.Application.DTO
         public List<VaccineDbDTO> vaccines { get; set; }
         public List<ServiceSubCategoryDb> subcategories { get; set; }
     }
+    public class AttendanceOutPutOfProntuario
+    {
+        public string idattendance { get; set; }
+        public string idos { get; set; }
+        public string status { get; set; }
+        public string hipotese { get; set; }
+        public string conclusao { get; set; }
+        public bool haveanamnese { get; set; }
+        public string idform { get; set; }
+        public Serviceoutput service { get; set; }
+    }
+    
 }

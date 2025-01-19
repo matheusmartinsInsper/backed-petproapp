@@ -61,20 +61,5 @@ namespace app.WebUI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPost("Collaborator")]
-        public async Task<ActionResult> SigninUserCollaborator([FromBody] SigninUserDTO user)
-        {
-            try
-            {
-                SigninUserCollaborator usecase = new SigninUserCollaborator(_repocollaborator, _tokenService);
-                OutPutSignin output = await usecase.execute(user.email, user.password);
-                Response.Headers.Add("Token", output.token);
-                return Ok(output);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
     }
 }

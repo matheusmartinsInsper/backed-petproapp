@@ -10,8 +10,12 @@ namespace app.Domain.Agregate.Entities
         private string _description;
         private string _name;
         private List<ItemSize> _sizes;
+        private Dictionary<string, string> _specifications;
+        private List<Summary> _summaries;
+        private List<Specification> _specificationsdto;
         private string _unity;
         private DateTime _datecreate;
+        private Boolean _wasexclude;
         private List<string> categoriesvalid = new List<string>()
         {
             "Medicamento",
@@ -29,11 +33,18 @@ namespace app.Domain.Agregate.Entities
         public string name { get { return _name; } }
         public string unity { get { return _unity; } }
         public DateTime datecreate { get { return _datecreate; } }
+        public Dictionary<string, string> specifications { get { return _specifications; } }
+        public List<Summary> summaries { get { return _summaries; } }
+        public List<Specification> specificationsdto { get { return _specificationsdto; } }
+        public Boolean wasexclude { get { return _wasexclude; } }
         private Item() { }
         public static Item create(ItemDTO itemdto, string iduser)
         {
             Item item = new Item();
             item._sizes = new List<ItemSize>();
+            item._specifications = new Dictionary<string, string>();
+            item._specificationsdto = new List<Specification>();
+            item._summaries = new List<Summary>();
             item._datecreate = DateTime.Now;
             item._category = item.categoriesvalid.Find((x) => x == itemdto.category).First()!=null?itemdto.category:throw new Exception("Categoria invalida");
             item._name = itemdto.name;
@@ -41,17 +52,27 @@ namespace app.Domain.Agregate.Entities
             item._unity = itemdto.unity;
             item._iduser = iduser;
             item._itemid = Guid.NewGuid().ToString("N");
+            item._summaries = itemdto.summaries;
+            item._specificationsdto = itemdto.specifications;
+            item._wasexclude = false;
             foreach(ItemSizeDTO sizedto in itemdto.sizes)
             {
                 ItemSize size = ItemSize.create(sizedto, item.itemid);
                 item._sizes.Add(size);
             }
+            foreach(Specification specification in itemdto.specifications)
+            {
+                item._specifications[specification.tag] = specification.name;
+            }
             return item;
         }
-        public static Item restore(ItemDTODb itemdto,List<ItemSizeDTODb> sizes)
+        public static Item restore(ItemDTODb itemdto,List<ItemSizeDTODb> sizes, List<Summary> summaries, List<Specification> specifications)
         {
             Item item = new Item();
+            item._wasexclude = itemdto.wasexclude;
             item._sizes = new List<ItemSize>();
+            item._summaries = new List<Summary>();
+            item._specificationsdto = new List<Specification>();
             item._datecreate = itemdto.datecreate;
             item._category = itemdto.category;
             item._name = itemdto.name;
@@ -59,6 +80,8 @@ namespace app.Domain.Agregate.Entities
             item._unity = itemdto.unity;
             item._iduser = itemdto.iduser;
             item._itemid = itemdto.itemid;
+            item._summaries = summaries;
+            item._specificationsdto = specifications;
             foreach (ItemSizeDTODb sizedto in sizes)
             {
                 ItemSize size = ItemSize.restore(sizedto);
@@ -75,6 +98,10 @@ namespace app.Domain.Agregate.Entities
         {
             ItemSize itemsize = _sizes.FirstOrDefault((x) => x.iditemsize == iditemsize);
             itemsize.Unavalaible();
+        }
+        public void exclude()
+        {
+            _wasexclude = true;
         }
     }
     public class ItemSize

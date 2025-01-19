@@ -62,5 +62,25 @@ namespace app.WebUI.Controllers
                 });
             }
         }
+        [HttpDelete]
+        [Authorize]
+        public async Task<ActionResult> deleteItem([FromQuery(Name = "iditem")] string iditem)
+        {
+            try
+            {
+                DeleteItem usecase = new DeleteItem(_repoitem);
+                string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
+                await usecase.execute(iditem,iduser);
+                var data = new { status = "confirmed"};
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    messageError = ex.Message
+                });
+            }
+        }
     }
 }

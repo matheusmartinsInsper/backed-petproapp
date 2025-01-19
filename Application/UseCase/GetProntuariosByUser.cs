@@ -31,6 +31,8 @@ namespace app.Application.UseCase
         {
             List<OutPutProntuariosDTO> output = new List<OutPutProntuariosDTO>();
             List<Prontuario> prontuarios = await _repoprontuario.getByIdOwner(idowner);
+            if(prontuarios==null)
+                return output;
             foreach(Prontuario prontuario in prontuarios)
             {
                 OutPutProntuariosDTO dto = new OutPutProntuariosDTO()

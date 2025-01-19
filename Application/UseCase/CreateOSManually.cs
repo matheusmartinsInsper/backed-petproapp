@@ -36,6 +36,7 @@ namespace app.Application.UseCase
             User user = await _repoclinic.getUserBase(iduserowner);
             if (user.categoryCode == "Tutor")
                 throw new Exception("Usuario sem acesso a esse recurso");
+            orderinput.user.password = new GeneratePassword().generate();
             User tutor = User.create(orderinput.user);
             PetDTOInputUseCase dto = new PetDTOInputUseCase()
             {
@@ -66,8 +67,6 @@ namespace app.Application.UseCase
             };
             OrderService myorder = OrderService.create(os);
             ClientPortfolio port = await _repoport.get(iduserowner);
-            try
-            {
                 string token = _tokenservice.GenerateToken(tutor);
                 await _repouser.save(tutor);
                 ClientOnboarding onboarding = new ClientOnboarding(user, tutor, port);
@@ -92,16 +91,6 @@ namespace app.Application.UseCase
                 prontuarioOfPet.addorderservice(myorder.idorderservice);
                 await _repoprontuario.update(prontuarioOfPet);
                 return myorder;
-            }
-            catch (Exception ex)
-            {
-                port.remove(tutor.id);
-                await _repoport.save(port);
-                await _repouser.delete(tutor);
-                await _repopet.delete(pet);
-                await _repositoryos.delete(myorder);
-                throw new Exception(ex.Message);
-            }
            
         }
     }

@@ -51,8 +51,9 @@ namespace app.Application.UseCase
                 OrderService myorder = OrderService.create(os);
                 myorder.acceptOrder(idowner, idowner);
                 await _repoorder.save(myorder);
-                Prontuario prontuarioOfPet = await _repoprontuario.getByIdPet(myorder.idPet);
-                if (prontuarioOfPet == null)
+                List<Prontuario> prontuariosOfPet = await _repoprontuario.getByIdOwner(idowner);
+                Prontuario prontuariopet = prontuariosOfPet.Find((x) => x.idpet == myorder.idPet);
+                if (prontuariopet == null)
                 {
                     ProntuarioDTO prontuariodto = new ProntuarioDTO()
                     {
@@ -65,8 +66,8 @@ namespace app.Application.UseCase
                     await _repoprontuario.save(prontuario);
                     return;
                 }
-                prontuarioOfPet.addorderservice(myorder.idorderservice);
-                await _repoprontuario.update(prontuarioOfPet);
+                prontuariopet.addorderservice(myorder.idorderservice);
+                await _repoprontuario.update(prontuariopet);
                 return;
             }
             throw new Exception("Não é possivel agendamentar um atendimento para esse tipo de usuario");

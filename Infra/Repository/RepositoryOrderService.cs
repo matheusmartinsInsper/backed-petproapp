@@ -34,7 +34,7 @@ namespace app.Infra.Repository
         public async Task<OrderService> get(string id)
         {
             await _context.connect(_connectString);
-            string commandBase = "SELECT idservice,idorderservice,idusertutor,iduserrecipient,idpet,iduseraccepted,iduserattendance,status,dateofsolicitation,dateappointed,attendencemodel,comments,wasaccepted,priority,idattendance from " +
+            string commandBase = "SELECT idservice,idorderservice,idusertutor,iduserrecipient,idpet,iduseraccepted,iduserattendance,status,dateofsolicitation,dateappointed,attendencemodel,comments,wasaccepted,priority,idattendance,tutorcancell from " +
                                  "orderservice where idorderservice = @idorderservice";
             string commandGetSubcategory = "SELECT subcategoryoforder.idsubcategory, subcategoryoforder.idorderservice from subcategoryoforder INNER JOIN orderservice " +
                                            "on subcategoryoforder.idorderservice = orderservice.idorderservice WHERE orderservice.idorderservice = @idorderservice";

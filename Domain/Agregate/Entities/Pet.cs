@@ -85,7 +85,12 @@ namespace app.Domain.Agregate.Entities
             pet._weight= petdto.weight;
             pet._years = DateTime.Now.Year - petdto.dateborn.Year;
             pet._months = DateTime.Now.Month - petdto.dateborn.Month;
-            pet._age = year < 1 ? $"{pet._months} meses" : $"{pet._years} Anos e {pet._months} meses";
+            if (pet._months < 0)
+            {
+                pet._years--;
+                pet._months += 12;
+            }
+            pet._age = year < 1 ? $"{pet._months} meses" : $"{pet._years} Anos, {pet._months} meses";
             pet._sex = petdto.sex;
             pet._species= petdto.species;
             pet._race= petdto.race;

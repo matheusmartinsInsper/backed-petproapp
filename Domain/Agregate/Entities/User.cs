@@ -35,13 +35,26 @@ namespace app.Domain.Agregate.Entities
         public static User create(UserTutor user)
         {
             User _user = new User();
+            _user._Fone = new PhoneDTO();          
             _user.Email = new Email(user.email);
             _user.email = _user.Email.Value;
-            _user.name = user.name == null ? "erro" : user.name;
+            _user.name = user.name == null ? "erro, name is not be null" : user.name;
             _user.password = user.password;
             _user._id = Guid.NewGuid().ToString("N");
             _user._dateborn = DateTime.Today;
             _user._categoryCode = "Tutor";
+            _user._idadress = Guid.NewGuid().ToString("N");
+            _user.uf = user.adress.uf;
+            _user.city = user.adress.city;
+            _user.street = user.adress.street;
+            _user.number = user.adress.number;
+            _user.cep = user.adress.cep;
+            _user._Fone.areacode = user.phone.areacode;
+            _user._Fone.countrycode = user.phone.countrycode;
+            _user._Fone.phone = user.phone.phone;
+            _user._Fone.iduser = _user.id;
+            _user._Fone.idfone = Guid.NewGuid().ToString("N");
+            _user._Fone.createat = DateTime.Now;
             return _user;
         }
         public static User create(UserClinic user)

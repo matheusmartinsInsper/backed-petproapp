@@ -1,4 +1,5 @@
 ﻿using app.Domain.DTO.Item;
+using app.Domain.DTO.Stock;
 
 namespace app.Application.DTO
 {
@@ -16,5 +17,6 @@ namespace app.Application.DTO
         public string unity { get; set; }
         public string description { get; set; }
         public ItemSizeDTODb itemsize { get; set; }
+        public List<TransactionDTODb> transactions { get; set; }
     }
 }

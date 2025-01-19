@@ -52,6 +52,8 @@ namespace app.Infra.Repository
         {
             await _context.connect(_connectString);
             string commandBase = "INSERT INTO \"user\" (name,email,password,iduser,category,dateborn) VALUES (@name,@email,@password,@iduser,@category,@dateborn)";
+            string commandinsertPhone = "insert into fone (iduser,idfone,phone,countrycode,areacode,createat) values (@iduser,@idfone,@phone,@countrycode,@areacode,@createat)";
+            string commandAdress = "INSERT INTO \"adress\" (iduser,idadress,uf,city,street,number,cep) VALUES (@iduser,@idadress,@uf,@city,@street,@number,@cep)";
             Dictionary<string, object> parameters = new Dictionary<string, object>()
             {
                 {"@name",user.name },
@@ -61,7 +63,30 @@ namespace app.Infra.Repository
                 {"@category",user.categoryCode },
                 {"@dateborn",user.dateborn },
             };
+            Dictionary<string, object> paramns = new Dictionary<string, object>()
+            {
+                { "@iduser" ,user.id},
+                { "@idfone" ,user.Fone.idfone},
+                { "@phone" ,user.Fone.phone},
+                { "@countrycode" ,user.Fone.countrycode},
+                { "@areacode" ,user.Fone.areacode},
+                { "@createat" ,user.Fone.createat}
+            };
+            Dictionary<string, object> parametersAdress = new Dictionary<string, object>()
+            {
+                {"@iduser",user.id },
+                {"@idadress",user._idadress },
+                {"@uf",user.uf },
+                {"@city",user.city },
+                {"@street",user.street },
+                {"@number",user.number },
+                {"@cep",user.cep },
+            };
             await _context.command(commandBase,parameters);
+            if (user.Fone.phone != null && user.Fone.areacode != null && user.Fone.countrycode != null)
+                await _context.command(commandinsertPhone, paramns);
+            if(user.uf != null&&user.city!=null&&user.street!=null&&user.number!=null&&user.cep!=null)
+                await _context.command(commandAdress, parametersAdress);
             _context.close();
         }
         public async Task<User> getByEmail(string email)

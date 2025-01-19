@@ -16,10 +16,16 @@ namespace app.Application.UseCase
         {
             List<Item> items = await _repoitem.getbyiduser(iduser);  
             List<ItemDTOOutput> output = new List<ItemDTOOutput>();
+            if(items==null)
+                return output;
             foreach (Item item in items)
             {
                 ItemDTOOutput itemdto = new ItemDTOOutput();
                 itemdto.sizes = new List<ItemSizeDTODb>();
+                itemdto.specifications = new List<Specification>();
+                itemdto.specifications = item.specificationsdto;
+                itemdto.summaries = new List<Summary>();
+                itemdto.summaries = item.summaries;
                 itemdto.itemid = item.itemid;
                 itemdto.description = item.description;
                 itemdto.name = item.name;

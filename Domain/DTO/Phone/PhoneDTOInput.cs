@@ -2,8 +2,8 @@
 {
     public class PhoneDTOInput
     {
-        public string countrycode { get; set; }
-        public string areacode { get; set; }
+        public int countrycode { get; set; }
+        public int areacode { get; set; }
         public int phone { get; set; }
     }
 }

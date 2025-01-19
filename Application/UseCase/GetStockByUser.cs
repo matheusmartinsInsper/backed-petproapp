@@ -3,6 +3,7 @@ using app.Application.IRepository;
 using app.Domain.Agregate.Entities;
 using app.Domain.DTO.Item;
 using app.Domain.DTO.Stock;
+using System.Transactions;
 
 namespace app.Application.UseCase
 {
@@ -23,12 +24,14 @@ namespace app.Application.UseCase
             foreach (Stock stock in stocks)
             {
                 StockOutputcs stockdto = new StockOutputcs();
+                stockdto.transactions = new List<TransactionDTODb>();
                 Item item = await _repoitem.getbyid(stock.iditem);
                 ItemSize size = item.sizes.Where((x)=>x.iditemsize==stock.iditemsize).FirstOrDefault(); 
                 ItemSizeDTODb sizedto = new ItemSizeDTODb();
                 sizedto.iditemsize = size.iditemsize;
                 sizedto.price = size.price;
                 sizedto.size = size.size;
+                sizedto.avalaible = size.avalaible;
                 stockdto.quantity = stock.quantity;
                 stockdto.lote = stock.lote;
                 stockdto.idstock = stock.idstock;
@@ -41,7 +44,20 @@ namespace app.Application.UseCase
                 stockdto.categoryitem = item.category;
                 stockdto.unity = item.unity;
                 stockdto.itemsize = sizedto;
+                stockdto.transactions = stock.transactions.Select(transaction => new TransactionDTODb
+                {
+                    iditem = transaction.iditem,
+                    lote = transaction.lote,
+                    quantity = transaction.quantity,
+                    iditemsize = transaction.iditemsize,
+                    idtransaction = transaction.idtransaction,
+                    idstock = transaction.idstock,
+                    priceunity = transaction.priceunity,
+                    datecreate = transaction.datecreate,
+                    type = transaction.type
+                }).ToList();
                 stocksdto.Add(stockdto);
+               
             }
             return stocksdto;
         }

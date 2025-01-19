@@ -26,7 +26,7 @@ namespace app.Application.UseCase
             _repoprontuario = repoprontuario;
             _repoattendance = repoattendance;
         }
-        public async Task<OutputProntuarioDTO> execute(string idowner, string idprontuario)
+        public async Task<OutputProntuarioDTO> execute(string idprontuario)
         {
             Prontuario prontuario = await _repoprontuario.get(idprontuario);
                 OutputProntuarioDTO dto = new OutputProntuarioDTO()
@@ -35,6 +35,7 @@ namespace app.Application.UseCase
                     tutor = new Tutor()
                 };
                 List<OutputOsFromProntuario> orders = new List<OutputOsFromProntuario>();
+                List<AttendanceOutPutOfProntuario> attendances = new List<AttendanceOutPutOfProntuario>();
                 Pet pet = await _repopet.get(prontuario.idpet);
                 User tutor = await _repouser.get(prontuario.idtutor);
                 foreach (string idsos in prontuario.idsorderservices)
@@ -67,10 +68,36 @@ namespace app.Application.UseCase
                 foreach (string idattendance in prontuario.idsattendance)
                 {
                     Attendance att = await _repoattendance.get(idattendance);
-                    OrderService order = await _repository.get(att.idos);
-                }
+                OrderService os = await _repository.get(att.idos);
+                Service service = await _reposervice.get(os.idService);
+                AttendanceOutPutOfProntuario outputDTO = new AttendanceOutPutOfProntuario
+                {
+                    service = new Serviceoutput()
+                };
+                outputDTO.status = att.status;
+                outputDTO.idattendance = att.idattendance;
+                outputDTO.haveanamnese = att.haveanamnese;
+                outputDTO.idform = att.idform;
+                outputDTO.idos = att.idos;
+                outputDTO.hipotese = att.hipoteses;
+                outputDTO.conclusao = att.conclusao;
+                outputDTO.service.comments = os.comments;
+                outputDTO.service.title = service.titleService;
+                outputDTO.service.category = service.nameCategory;
+                outputDTO.service.priority = os.priority;
+                outputDTO.service.vacinas = service.selectvaccines(os.idvaccines);
+                outputDTO.service.subcategorias = service.subcategoriesOfOs(os.idsubservices);
+                outputDTO.service.atendimento = os.attendance;
+                outputDTO.service.waspaid = att.waspaid ? "Sim" : "Não";
+                outputDTO.service.description = service.description;
+                outputDTO.service.dateapontted = os.dateappointed;
+                outputDTO.service.datesolicitation = os.dateofsolicitation;
+                SumPriceOS sum = new SumPriceOS(service, outputDTO.service.subcategorias, outputDTO.service.vacinas);
+                outputDTO.service.totalprice = sum.sum();
+                attendances.Add(outputDTO);
+            }
                 dto.idprontuario = prontuario.idprontuario;
-                dto.idsattendance = prontuario.idsattendance;
+                dto.attendances = attendances;
                 dto.datecreate = prontuario.createDate;
                 dto.orders = orders;
                 dto.pet.petname = pet.PetName;
@@ -81,9 +108,11 @@ namespace app.Application.UseCase
                 dto.pet.weight = pet.Weight;
                 dto.pet.castrated = pet.Castrated;
                 dto.pet.sex = pet.Sex;
+                dto.pet.contraindications = pet.contraindications;
                 dto.tutor.email = tutor.email;
                 dto.tutor.name = tutor.name;
-                return dto;
+                dto.tutor.phone = tutor.Fone != null ? $"+{tutor.Fone.countrycode}{tutor.Fone.areacode}{tutor.Fone.phone}" : null;
+            return dto;
         }
     }
 }

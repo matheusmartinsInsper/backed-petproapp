@@ -53,15 +53,14 @@ namespace app.WebUI.Controllers
             }
         }
         [HttpGet("Pet")]
-        [Authorize]
-        public async Task<ActionResult> GetProntuarioOfPet()
+        public async Task<ActionResult> GetProntuarioOfPet([FromQuery(Name = "idprontuario")] string idprontuario)
         {
             try
             {
-                GetProntuariosByUser usecase = new GetProntuariosByUser(_repoattendance, _repoprontuario, _repopet, _repoclinic, _repository, _reposervice, _repouser, _repoport);
-                string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
-                List<OutPutProntuariosDTO> prontuarios = await usecase.execute(iduser);
-                var data = new { status = "confirmed", data = prontuarios };
+                GetProntuario usecase = new GetProntuario(_repoattendance, _repoprontuario, _repopet, _repoclinic, _repository, _reposervice, _repouser, _repoport);
+                //string iduser = User.Claims.FirstOrDefault(c => c.Type == "identifier").ToString().Split(" ").Last();
+                OutputProntuarioDTO prontuario = await usecase.execute(idprontuario);
+                var data = new { status = "confirmed", data = prontuario };
                 return Ok(data);
             }
             catch (Exception ex)
